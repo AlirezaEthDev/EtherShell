@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "chalk": "^5.4.1",
-    "ethers": "^6.13.5"
+    "ethers": "^6.13.5",
+    "solc": "^0.8.29"
   }
 }

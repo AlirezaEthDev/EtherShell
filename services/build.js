@@ -3,7 +3,7 @@ const fs = require('fs');
 const solc = require('solc');
 const utils = require('../utils/dir');
 
-const compile = (fullpath, buildPath) => {
+const compile = (fullpath, buildPath, selectedContracts = []) => {
 
   const source = fs.readFileSync(fullpath, 'utf8');
   const filename = path.basename(fullpath, '.sol');
@@ -49,12 +49,13 @@ const compile = (fullpath, buildPath) => {
   // Ensure all sub-paths exist
   subPaths.forEach(utils.check);
 
-  const contractsCount = Object.keys(output.contracts[filename]).length;
-
-  for(i = 0; i < contractsCount; i++){
-
-    // Extract contracts data
-    const contractName = Object.keys(output.contracts[filename])[i];
+  const allContracts = Object.keys(output.contracts[filename]);
+  const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
+    (contractName) => {
+      return selectedContracts.includes(contractName);
+    } 
+  ): allContracts;
+  contractsToSave.forEach((contractName) => {
     const contractsData = output.contracts[filename][contractName];
 
     // Save on artifacts
@@ -72,10 +73,10 @@ const compile = (fullpath, buildPath) => {
     // Save on metadata
     const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
     fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+  })
 
-  }
+  console.log(`Contract compiled into ${path.resolve(buildPath)}`);
 
-  console.log(`Contract compiled into ${buildPath}`);
 }
 
 module.exports = {

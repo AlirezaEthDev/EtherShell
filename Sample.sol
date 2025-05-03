@@ -11,3 +11,15 @@ contract Sample{
     }
 
 }
+
+contract Math{
+    function plus(uint a, uint b) external pure returns(uint c){
+        c = a + b;
+    }
+}
+
+contract State{
+    function getState() external pure returns (bool fullstate){
+        fullstate = true;
+    }
+}

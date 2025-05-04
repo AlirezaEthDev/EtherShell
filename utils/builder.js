@@ -3,6 +3,15 @@ const fs = require('fs');
 const solc = require('solc');
 const dir = require('./dir');
 
+const loadSolcVersion = (version) => {
+  return new Promise((resolve, reject) => {
+    solc.loadRemoteVersion(version, (err, solcInstance) => {
+      if (err) reject(err);
+      else resolve(solcInstance);
+    });
+  });
+};
+
 const build = (fullpath, buildPath, selectedContracts) => {
     const source = fs.readFileSync(fullpath, 'utf8');
     const filename = path.basename(fullpath, '.sol');
@@ -10,7 +19,7 @@ const build = (fullpath, buildPath, selectedContracts) => {
     const input = {
         language: 'Solidity',
         sources: {
-          [filename]: {
+          [`${filename}`]: {
             content: source,
           },
         },
@@ -41,14 +50,14 @@ const build = (fullpath, buildPath, selectedContracts) => {
     // Ensure all sub-paths exist
     subPaths.forEach(dir.check);
     
-    const allContracts = Object.keys(output.contracts[filename]);
+    const allContracts = Object.keys(output.contracts[`${filename}`]);
     const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
         (contractName) => {
           return selectedContracts.includes(contractName);
         } 
       ): allContracts;
     contractsToSave.forEach((contractName) => {
-        const contractsData = output.contracts[filename][contractName];
+        const contractsData = output.contracts[`${filename}`][contractName];
     
         // Save on artifacts
         const artifactsPath = path.join(artifacts, `${contractName}.json`);
@@ -70,5 +79,6 @@ const build = (fullpath, buildPath, selectedContracts) => {
 }
 
 module.exports = {
-    build
+  loadSolcVersion,
+  build
 }

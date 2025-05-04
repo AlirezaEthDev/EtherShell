@@ -1,81 +1,47 @@
 const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
-const utils = require('../utils/dir');
+const dir = require('../utils/dir');
+const builder = require('../utils/builder');
 
 const compile = (fullpath, buildPath, selectedContracts = []) => {
 
-  const source = fs.readFileSync(fullpath, 'utf8');
-  const filename = path.basename(fullpath, '.sol');
+  try{
+    const fileExt = path.extname(fullpath);
 
-  const input = {
-    language: 'Solidity',
-    sources: {
-      [filename]: {
-        content: source,
-      },
-    },
-    settings: {
-      outputSelection: {
-        '*': {
-          '*': ['*'],
-        },
-      },
-    },
+    if(!fileExt){
+      const files = fs.readdirSync(fullpath);
+      let solFiles = [];
+      if(!files.length){
+        throw 'The directory is empty!';
+      }else{
+        for(i = 0; i < files.length; i++){
+          const fileExtension = path.extname(files[i]);
+          if(fileExtension == '.sol'){
+            const solFilePath = path.join(fullpath, `${files[i]}`);
+            solFiles.push(solFilePath);
+          }
+        }
+        if(!solFiles.length){
+          throw 'There is no smart contract in the directory!';
+        }else{
+          for(i = 0; i < solFiles.length; i++){
+            builder.build(solFiles[i], buildPath, selectedContracts);
+          }
+          console.log(`Contract compiled into ${path.resolve(buildPath)}`);
+        }
+      }
+    }else{
+      if(!buildPath){    
+          buildPath = path.resolve('..', 'build');
+          [buildPath].forEach(dir.check); 
+      }
+      builder.build(fullpath, buildPath, selectedContracts);
+      console.log(`Contract compiled into ${path.resolve(buildPath)}`);
+    }
+  }catch(err){
+    console.error(err);
   }
-
-  const output = JSON.parse(solc.compile(JSON.stringify(input)));
-
-  if(!buildPath){
-
-    buildPath = path.resolve('..', 'build');
-    [buildPath].forEach(utils.check);
-
-  }
-
-  // Generate sub-paths of build
-  const artifacts = path.join(buildPath, 'artifacts');
-  const abis = path.join(buildPath, 'abis');
-  const bytecode = path.join(buildPath, 'bytecode');
-  const metadata = path.join(buildPath, 'metadata');
-
-  const subPaths = [
-    artifacts,
-    abis,
-    bytecode,
-    metadata
-  ]
-
-  // Ensure all sub-paths exist
-  subPaths.forEach(utils.check);
-
-  const allContracts = Object.keys(output.contracts[filename]);
-  const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
-    (contractName) => {
-      return selectedContracts.includes(contractName);
-    } 
-  ): allContracts;
-  contractsToSave.forEach((contractName) => {
-    const contractsData = output.contracts[filename][contractName];
-
-    // Save on artifacts
-    const artifactsPath = path.join(artifacts, `${contractName}.json`);
-    fs.writeFileSync(artifactsPath, JSON.stringify(contractsData, null, 2));
-
-    // Save on abis
-    const abisPath = path.join(abis, `${contractName}.abi.json`);
-    fs.writeFileSync(abisPath, JSON.stringify(contractsData.abi, null, 2));
-
-    // Save on bytecode
-    const bytecodePath = path.join(bytecode, `${contractName}.bin`);
-    fs.writeFileSync(bytecodePath, JSON.stringify(contractsData.evm.bytecode, null, 2));
-
-    // Save on metadata
-    const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
-    fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
-  })
-
-  console.log(`Contract compiled into ${path.resolve(buildPath)}`);
 
 }
 

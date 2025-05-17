@@ -1,0 +1,28 @@
+[
+  {
+    "inputs": [],
+    "name": "location",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "newLoc",
+        "type": "string"
+      }
+    ],
+    "name": "setLoc",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

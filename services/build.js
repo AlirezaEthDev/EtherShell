@@ -6,15 +6,14 @@ const builder = require('../utils/builder');
 
 let currentSolcInstance = solc; // default local compiler
 
-const setVersion = async (version) => {
-  currentSolcInstance = await new Promise((resolve, reject) => {
-    solc.loadRemoteVersion(version, (err, solcSpecificVersion) => {
-      if (err) reject(err);
-      else resolve(solcSpecificVersion);
-    });
-  });
-  console.log('Loaded solc version:', currentSolcInstance.version());
-};
+
+const updateCompiler = (version) => {
+
+  builder.setVersion(version, currentSolcInstance)
+    .then((version) => currentSolcInstance = version)
+    .catch(err => console.error(err));
+
+}
 
 const currentCompiler = () => currentSolcInstance;
 
@@ -60,7 +59,7 @@ const compile = (fullpath, buildPath, selectedContracts = []) => {
 }
 
 module.exports = {
-  setVersion,
+  updateCompiler,
   currentCompiler,
   compile
 }

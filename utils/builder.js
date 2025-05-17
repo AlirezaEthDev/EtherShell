@@ -12,6 +12,18 @@ const loadSolcVersion = (version) => {
   });
 };
 
+const setVersion = async (version, solcInstance) => {
+  solcInstance = await new Promise((resolve, reject) => {
+    solc.loadRemoteVersion(version, (err, solcSpecificVersion) => {
+      if (err) reject(err);
+      else resolve(solcSpecificVersion);
+    });
+  });
+  const newVersion = solcInstance.version();
+  console.log('Loaded solc version:', newVersion);
+  return newVersion;
+};
+
 const build = (fullpath, buildPath, selectedContracts) => {
     const source = fs.readFileSync(fullpath, 'utf8');
     const filename = path.basename(fullpath, '.sol');
@@ -80,5 +92,6 @@ const build = (fullpath, buildPath, selectedContracts) => {
 
 module.exports = {
   loadSolcVersion,
+  setVersion,
   build
 }

@@ -1,24 +1,22 @@
-const path = require('path');
-const fs = require('fs');
-const solc = require('solc');
-const dir = require('../utils/dir');
-const builder = require('../utils/builder');
+import path from 'path';
+import fs from 'fs';
+import solc from 'solc';
+import { check } from '../utils/dir.js';
+import { setVersion, build } from '../utils/builder.js';
 
 let currentSolcInstance = solc; // default local compiler
 
-
-const updateCompiler = (version) => {
-
-  builder.setVersion(version, currentSolcInstance)
-    .then((version) => currentSolcInstance = version)
+export function updateCompiler(version){
+  setVersion(version, currentSolcInstance)
+    .then((solcInstance) => currentSolcInstance = solcInstance)
     .catch(err => console.error(err));
-
 }
 
-const currentCompiler = () => currentSolcInstance;
+export function currentCompiler(){
+  return currentSolcInstance.version();
+}
 
-const compile = (fullpath, buildPath, selectedContracts = []) => {
-
+export function compile(fullpath, selectedContracts = [], buildPath){
   try{
     const fileExt = path.extname(fullpath);
 
@@ -39,7 +37,7 @@ const compile = (fullpath, buildPath, selectedContracts = []) => {
           throw 'There is no smart contract in the directory!';
         }else{
           for(i = 0; i < solFiles.length; i++){
-            builder.build(solFiles[i], buildPath, selectedContracts);
+            build(solFiles[i], buildPath, selectedContracts);
           }
           console.log(`Contract compiled into ${path.resolve(buildPath)}`);
         }
@@ -47,19 +45,12 @@ const compile = (fullpath, buildPath, selectedContracts = []) => {
     }else{
       if(!buildPath){    
           buildPath = path.resolve('..', 'build');
-          [buildPath].forEach(dir.check); 
+          [buildPath].forEach(check); 
       }
-      builder.build(fullpath, buildPath, selectedContracts);
+      build(fullpath, buildPath, selectedContracts);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
   }catch(err){
     console.error(err);
   }
-
-}
-
-module.exports = {
-  updateCompiler,
-  currentCompiler,
-  compile
 }

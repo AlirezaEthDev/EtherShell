@@ -1,11 +1,7 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const check = (dir) => {
+export function check(dir){
     if(!fs.existsSync(dir)){
       fs.mkdirSync(dir, {recursive: true});
     }
-  }
-
-  module.exports = {
-    check
-  }
+}

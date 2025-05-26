@@ -1,24 +1,23 @@
-const repl = require('repl');
-const network = require('./services/network');
-const build = require('./services/build');
-const solc = require('solc');
+import repl from 'repl';
+import { set, get, getDefault } from './services/network.js';
+import { updateCompiler, currentCompiler, compile } from './services/build.js';
 
 // Start
 const r = repl.start({
-    prompt: 'iConsole > ',
+    prompt: 'EtherShell > ',
     ignoreUndefined: true
 })
 
 // Network
-r.context.setNetwork = network.set;
+r.context.setNetwork = set;
 
-r.context.getNetwork = network.get;
+r.context.getNetwork = get;
 
-r.context.defaultNetwork = network.getDefault;
+r.context.defaultNetwork = getDefault;
 
 // Build
-r.context.compilerVersion = build.currentCompiler;
+r.context.compilerVersion = currentCompiler;
 
-r.context.setCompiler = build.updateCompiler;
+r.context.setCompiler = updateCompiler;
 
-r.context.compile = build.compile;
+r.context.compile = compile;

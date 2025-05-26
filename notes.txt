@@ -3,3 +3,6 @@ https://binaries.soliditylang.org/bin/list.json
 
 Format like this:
 v0.8.28+commit.7893614a
+
+RPC Endpoint:
+https://ethereum-rpc.publicnode.com

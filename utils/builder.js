@@ -1,18 +1,18 @@
-const path = require('path');
-const fs = require('fs');
-const solc = require('solc');
-const dir = require('./dir');
+import path from 'path';
+import fs from 'fs';
+import solc from 'solc';
+import { check } from './dir.js';
 
-const loadSolcVersion = (version) => {
+export function loadSolcVersion(version){
   return new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcInstance) => {
       if (err) reject(err);
       else resolve(solcInstance);
     });
   });
-};
+}
 
-const setVersion = async (version, solcInstance) => {
+export async function setVersion(version, solcInstance){
   solcInstance = await new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcSpecificVersion) => {
       if (err) reject(err);
@@ -21,10 +21,10 @@ const setVersion = async (version, solcInstance) => {
   });
   const newVersion = solcInstance.version();
   console.log('Loaded solc version:', newVersion);
-  return newVersion;
-};
+  return solcInstance;
+}
 
-const build = (fullpath, buildPath, selectedContracts) => {
+export function build(fullpath, buildPath, selectedContracts){
     const source = fs.readFileSync(fullpath, 'utf8');
     const filename = path.basename(fullpath, '.sol');
     
@@ -60,7 +60,7 @@ const build = (fullpath, buildPath, selectedContracts) => {
       ]
     
     // Ensure all sub-paths exist
-    subPaths.forEach(dir.check);
+    subPaths.forEach(check);
     
     const allContracts = Object.keys(output.contracts[`${filename}`]);
     const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
@@ -87,11 +87,4 @@ const build = (fullpath, buildPath, selectedContracts) => {
         const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
         fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
     })
-
-}
-
-module.exports = {
-  loadSolcVersion,
-  setVersion,
-  build
 }

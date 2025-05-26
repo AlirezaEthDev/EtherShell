@@ -1,10 +1,10 @@
-const ethers = require('ethers');
+import { ethers } from 'ethers';
 
 const defaultUrl = 'http://127.0.0.1:8545' ;
 let currentUrl;
-let provider
+let provider 
 
-const set = (url) => {
+export function set(url){
     provider = new ethers.JsonRpcProvider(url);
     provider.getNetwork().then((result) => {
         currentUrl = url;
@@ -17,7 +17,7 @@ const set = (url) => {
     }).catch(console.error);
 }
 
-const get = () => {
+export function get(){
     provider.getNetwork().then((result) => {
         const network = {
             URL: currentUrl,
@@ -28,15 +28,9 @@ const get = () => {
     }).catch(console.error);
 }
 
-const getDefault = () => {
+export function getDefault(){
     const result = {
         URL: defaultUrl
     }
     console.log(result);
-}
-
-module.exports = {
-    set,
-    get,
-    getDefault
 }

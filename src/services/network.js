@@ -4,6 +4,9 @@ const defaultUrl = 'http://127.0.0.1:8545' ;
 let currentUrl;
 let provider 
 
+provider = new ethers.JsonRpcProvider(defaultUrl);
+currentUrl = defaultUrl;
+
 export function set(url){
     provider = new ethers.JsonRpcProvider(url);
     provider.getNetwork().then((result) => {

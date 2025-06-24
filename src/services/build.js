@@ -16,7 +16,7 @@ export function currentCompiler(){
   return currentSolcInstance.version();
 }
 
-export function compile(fullpath, selectedContracts = [], buildPath){
+export function compile(fullpath, selectedContracts, buildPath){
   try{
     const fileExt = path.extname(fullpath);
 

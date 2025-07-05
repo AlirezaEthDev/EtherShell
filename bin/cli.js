@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 
 import repl from 'repl';
-import { updateCompiler, currentCompiler, compile } from '../src/services/build.js';
+import { 
+    updateCompiler,
+    currentCompiler,
+    compilerOptions,
+    getCompilerOptions,
+    compile
+} from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
+import { deleteDirectory } from '../src/services/files.js';
 
 const r = repl.start({
     prompt: 'EtherShell> ',
@@ -15,6 +22,11 @@ r.context.chain = get;
 r.context.defaultChain = getDefault;
 
 // Compile commands
-r.context.compilerVersion = currentCompiler;
-r.context.setCompiler = updateCompiler;
+r.context.version = currentCompiler;
+r.context.compiler = updateCompiler;
+r.context.options = getCompilerOptions;
+r.context.compilerOpts = compilerOptions;
 r.context.compile = compile;
+
+// Clean build folder
+r.context.clean = deleteDirectory;

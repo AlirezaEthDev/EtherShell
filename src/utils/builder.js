@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import solc from 'solc';
 import { check } from './dir.js';
+import { getCompilerOptions } from '../services/build.js';
 
 export function loadSolcVersion(version){
   return new Promise((resolve, reject) => {
@@ -24,7 +25,12 @@ export async function setVersion(version, solcInstance){
   return solcInstance;
 }
 
-export function build(fullpath, buildPath, selectedContracts){
+export function build(fullpath, selectedContracts, buildPath){
+    if(!selectedContracts){
+      selectedContracts = [];
+    }
+
+    const compilerConfig = getCompilerOptions();
     const source = fs.readFileSync(fullpath, 'utf8');
     const filename = path.basename(fullpath, '.sol');
     
@@ -42,6 +48,18 @@ export function build(fullpath, buildPath, selectedContracts){
             },
           },
         },
+    }
+
+    // Apply global compiler configuration
+    if (compilerConfig.optimizer) {
+        input.settings.optimizer = {
+            enabled: true,
+            runs: compilerConfig.optimizerRuns
+        };
+    }
+
+    if (compilerConfig.viaIR) {
+        input.settings.viaIR = true;
     }
     
     const output = JSON.parse(solc.compile(JSON.stringify(input)));

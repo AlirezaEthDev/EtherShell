@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export async function deleteDirectory(dirPath){
+export function deleteDirectory(dirPath){
   try {
     if(!dirPath){    
       dirPath = path.resolve('..', 'build');
@@ -12,7 +12,7 @@ export async function deleteDirectory(dirPath){
       return;    }
 
     // For Node.js 14.14.0+ (recommended)
-    fs.promises.rm(dirPath, { recursive: true, force: true });
+    fs.rmSync(dirPath, { recursive: true, force: true });
 
     console.log('Directory deleted successfully');
   } catch (err) {

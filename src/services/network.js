@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 
 const defaultUrl = 'http://127.0.0.1:8545' ;
-let currentUrl;
-let provider 
+export let currentUrl;
+export let provider 
 
 provider = new ethers.JsonRpcProvider(defaultUrl);
 currentUrl = defaultUrl;

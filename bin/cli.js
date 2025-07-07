@@ -10,6 +10,7 @@ import {
 } from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
+import { addAccounts } from '../src/services/wallet.js';
 
 const r = repl.start({
     prompt: 'EtherShell> ',
@@ -30,3 +31,6 @@ r.context.compile = compile;
 
 // Clean build folder
 r.context.clean = deleteDirectory;
+
+// Set wallet
+r.context.addWallets = addAccounts;

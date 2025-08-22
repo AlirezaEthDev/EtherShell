@@ -67,6 +67,12 @@ export function createAccounts(count) {
 
 export function deleteAccount(accPointer) {
 
+    if(!accPointer) {
+
+        deleteByIndex(null);
+
+    }
+
     if(typeof accPointer == 'number') {
 
         deleteByIndex(accPointer);

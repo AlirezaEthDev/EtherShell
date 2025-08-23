@@ -10,7 +10,9 @@ import {
 } from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
-import { addAccounts, getAccounts, createAccounts, deleteAccount } from '../src/services/wallet.js';
+import {
+ addAccounts, getAccounts, createAccounts, deleteAccount, createHD, getHDAccounts, addHD, getAllAccounts
+    } from '../src/services/wallet.js';
 
 const r = repl.start({
     prompt: 'EtherShell> ',
@@ -34,6 +36,10 @@ r.context.clean = deleteDirectory;
 
 // Set wallet
 r.context.addWallets = addAccounts;
-r.context.wallets = getAccounts;
+r.context.addHDWallets = addHD;
 r.context.newWallets = createAccounts;
+r.context.newHDWallets = createHD;
+r.context.allWallets = getAllAccounts;
+r.context.wallets = getAccounts;
+r.context.hdWallets = getHDAccounts;
 r.context.removeWallet = deleteAccount;

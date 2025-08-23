@@ -2,7 +2,9 @@ import { ethers } from 'ethers';
 import { provider } from './network.js';
 import { deleteByIndex, seekAccount } from '../utils/accounter.js';
 
+export let allAccounts = [];
 export let accounts = [];
+export let hdAccounts = [];
 
 export function addAccounts(privKeyArr) {
 
@@ -14,10 +16,15 @@ export function addAccounts(privKeyArr) {
         throw `You need to add at least one private key. If you have no private key you can create new accounts by 'newAccounts()'! `;
     }
 
-    const newFrom = accounts.length;
+    const newFrom = allAccounts.length;
 
     if(typeof privKeyArr == 'string'){
         const newAccount = new ethers.Wallet(privKeyArr, provider);
+        allAccounts.push({
+            index: allAccounts.length,
+            address: newAccount.address,
+            privateKey: privKeyArr
+        });
         accounts.push({
             index: accounts.length,
             address: newAccount.address,
@@ -41,17 +48,42 @@ export function addAccounts(privKeyArr) {
 
 }
 
-export function createAccounts(count) {
+export function addHD(phrase, count = 10) {
 
-    if(!count) {
-        count = 1;
+    const newFrom = accounts.length;
+    
+    for (let i = 0; i < count; i++) {
+        const path = `m/44'/60'/0'/0/${i}`;
+        const newWallet = ethers.Wallet.fromPhrase(phrase, path);
+        allAccounts.push({
+            index: allAccounts.length,
+            address: newWallet.address,
+            phrase: phrase
+        });
+        hdAccounts.push({
+            index: hdAccounts.length,
+            address: newWallet.address,
+            phrase: phrase
+        });
     }
+
+    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.log(accounts.slice(newFrom));
+
+}
+
+export function createAccounts(count = 1) {
 
     const newAccounts = Array.from({length: count}, () => ethers.Wallet.createRandom());
     const newFrom = accounts.length;
 
     for(let i = 0; i < newAccounts.length; i++) {
 
+        allAccounts.push({
+            index: allAccounts.length,
+            address:  newAccounts[i].address,
+            privateKey: newAccounts[i].privateKey
+        });
         accounts.push({
             index: accounts.length,
             address: newAccounts[i].address,
@@ -62,6 +94,52 @@ export function createAccounts(count) {
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(accounts.slice(newFrom));
+
+}
+
+export function createHD(count = 10) {
+
+    const mnemonic = ethers.Wallet.createRandom().mnemonic.phrase;
+    const newFrom = accounts.length;
+    
+    for (let i = 0; i < count; i++) {
+        const path = `m/44'/60'/0'/0/${i}`;
+        const newWallet = ethers.Wallet.fromPhrase(mnemonic, path);
+        allAccounts.push({
+            index: allAccounts.length,
+            address: newWallet.address,
+            phrase: mnemonic
+        });
+        hdAccounts.push({
+            index: hdAccounts.length,
+            address: newWallet.address,
+            phrase: mnemonic
+        });
+    }
+
+    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.log(accounts.slice(newFrom));
+
+}
+
+export function getAllAccounts() {
+    
+    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.log(accounts);
+
+}
+
+export function getAccounts() {
+    
+    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.log(accounts);
+
+}
+
+export function getHDAccounts() {
+
+    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.log(hdAccounts);
 
 }
 
@@ -85,11 +163,5 @@ export function deleteAccount(accPointer) {
         deleteByIndex(index);
 
     }
-
-}
-
-export function getAccounts() {
-
-    console.log(accounts);
 
 }

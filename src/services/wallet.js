@@ -26,24 +26,29 @@ export function addAccounts(privKeyArr) {
             privateKey: privKeyArr
         });
         accounts.push({
-            index: accounts.length,
+            index: allAccounts.length - 1,
             address: newAccount.address,
             privateKey: privKeyArr
         });
-        console.log(accounts[newFrom]);
+        console.log(allAccounts[newFrom]);
     }
 
     if(Array.isArray(privKeyArr)){
         privKeyArr.map(privKey => {
             const newAccount = new ethers.Wallet(privKey, provider);
+            allAccounts.push({
+                index: allAccounts.length,
+                address: newAccount.address,
+                privateKey: privKey
+            });
             accounts.push({
-                index: accounts.length,
+                index: allAccounts.length - 1,
                 address: newAccount.address,
                 privateKey: privKey
             });
         });
 
-        console.log(accounts.slice(newFrom));
+        console.log(allAccounts.slice(newFrom));
     }
 
 }
@@ -61,14 +66,14 @@ export function addHD(phrase, count = 10) {
             phrase: phrase
         });
         hdAccounts.push({
-            index: hdAccounts.length,
+            index: allAccounts.length - 1,
             address: newWallet.address,
             phrase: phrase
         });
     }
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(accounts.slice(newFrom));
+    console.log(allAccounts.slice(newFrom));
 
 }
 
@@ -85,7 +90,7 @@ export function createAccounts(count = 1) {
             privateKey: newAccounts[i].privateKey
         });
         accounts.push({
-            index: accounts.length,
+            index: allAccounts.length - 1,
             address: newAccounts[i].address,
             privateKey: newAccounts[i].privateKey
         })
@@ -93,7 +98,7 @@ export function createAccounts(count = 1) {
     }
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(accounts.slice(newFrom));
+    console.log(allAccounts.slice(newFrom));
 
 }
 
@@ -111,21 +116,21 @@ export function createHD(count = 10) {
             phrase: mnemonic
         });
         hdAccounts.push({
-            index: hdAccounts.length,
+            index: allAccounts.length - 1,
             address: newWallet.address,
             phrase: mnemonic
         });
     }
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(accounts.slice(newFrom));
+    console.log(allAccounts.slice(newFrom));
 
 }
 
 export function getAllAccounts() {
     
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(accounts);
+    console.log(allAccounts);
 
 }
 

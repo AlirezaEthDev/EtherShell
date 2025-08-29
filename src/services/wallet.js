@@ -56,19 +56,25 @@ export function addAccounts(privKeyArr) {
 export function addHD(phrase, count = 10) {
 
     const newFrom = accounts.length;
+    const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
     
     for (let i = 0; i < count; i++) {
-        const path = `m/44'/60'/0'/0/${i}`;
-        const newWallet = ethers.Wallet.fromPhrase(phrase, path);
+        const hdWallet = hdNode.derivePath(i.toString());
         allAccounts.push({
             index: allAccounts.length,
-            address: newWallet.address,
-            phrase: phrase
+            address: hdWallet.address,
+            phrase: hdWallet.mnemonic.phrase,
+            privateKey: hdWallet.privateKey,
+            path: hdWallet.path,
+            depth: hdWallet.depth
         });
         hdAccounts.push({
             index: allAccounts.length - 1,
-            address: newWallet.address,
-            phrase: phrase
+            address: hdWallet.address,
+            phrase: hdWallet.mnemonic.phrase,
+            privateKey: hdWallet.privateKey,
+            path: hdWallet.path,
+            depth: hdWallet.depth
         });
     }
 
@@ -104,21 +110,26 @@ export function createAccounts(count = 1) {
 
 export function createHD(count = 10) {
 
-    const mnemonic = ethers.Wallet.createRandom().mnemonic.phrase;
+    const hdNode = ethers.HDNodeWallet.createRandom();
     const newFrom = accounts.length;
     
     for (let i = 0; i < count; i++) {
-        const path = `m/44'/60'/0'/0/${i}`;
-        const newWallet = ethers.Wallet.fromPhrase(mnemonic, path);
+        const hdWallet = hdNode.derivePath(i.toString());
         allAccounts.push({
             index: allAccounts.length,
-            address: newWallet.address,
-            phrase: mnemonic
+            address: hdWallet.address,
+            phrase: hdWallet.mnemonic.phrase,
+            privateKey: hdWallet.privateKey,
+            path: hdWallet.path,
+            depth: hdWallet.depth
         });
         hdAccounts.push({
             index: allAccounts.length - 1,
-            address: newWallet.address,
-            phrase: mnemonic
+            address: hdWallet.address,
+            phrase: hdWallet.mnemonic.phrase,
+            privateKey: hdWallet.privateKey,
+            path: hdWallet.path,
+            depth: hdWallet.depth
         });
     }
 

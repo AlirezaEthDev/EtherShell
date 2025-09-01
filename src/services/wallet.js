@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { provider } from './network.js';
-import { deleteByIndex } from '../utils/accounter.js';
+import { deleteByIndex, deleteByIndexArr } from '../utils/accounter.js';
 
 export let allAccounts = [];
 export let accounts = [];
@@ -164,20 +164,55 @@ export function deleteAccount(accPointer) {
     if(!accPointer) {
 
         deleteByIndex(null);
+        console.log(allAccounts);
 
     }
 
     if(typeof accPointer == 'number') {
 
         deleteByIndex(accPointer);
+        console.log(allAccounts);
 
     }
 
     if(ethers.isAddress(accPointer)) {
 
         const index = allAccounts.findIndex(wallet => wallet.address === accPointer);
-        deleteByIndex(index);
 
+        if(index !== -1) {
+            deleteByIndex(index);
+        }
+        console.log(allAccounts);
+
+    }
+
+    if(Array.isArray(accPointer)) {
+        deleteByIndexArr(accPointer);
+    }
+
+    if(ethers.Mnemonic.isValidMnemonic(accPointer)) {
+
+        // Find which accounts to be deleted
+        const indicesToDelete = [];
+            
+        for(let i = 0; i < allAccounts.length; i++) {
+            if(allAccounts[i].phrase === accPointer) {
+                indicesToDelete.push(allAccounts[i].index);
+            }
+        }
+
+        // Sort in descending order and delete from highest to lowest
+        indicesToDelete.sort((a, b) => b - a);
+
+        // Delete accounts
+        for(let i = 0; i < indicesToDelete.length; i++) {
+            deleteByIndex(indicesToDelete[i]);
+        }
+
+        // deleteByIndexArr(indicesToDelete);
+
+        console.log(allAccounts);
+        return;
     }
 
 }

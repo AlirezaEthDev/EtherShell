@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { provider } from './network.js';
-import { deleteByIndex, seekAccount } from '../utils/accounter.js';
+import { deleteByIndex } from '../utils/accounter.js';
 
 export let allAccounts = [];
 export let accounts = [];
@@ -55,7 +55,7 @@ export function addAccounts(privKeyArr) {
 
 export function addHD(phrase, count = 10) {
 
-    const newFrom = accounts.length;
+    const newFrom = allAccounts.length;
     const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
     
     for (let i = 0; i < count; i++) {
@@ -111,7 +111,7 @@ export function createAccounts(count = 1) {
 export function createHD(count = 10) {
 
     const hdNode = ethers.HDNodeWallet.createRandom();
-    const newFrom = accounts.length;
+    const newFrom = allAccounts.length;
     
     for (let i = 0; i < count; i++) {
         const hdWallet = hdNode.derivePath(i.toString());
@@ -175,7 +175,7 @@ export function deleteAccount(accPointer) {
 
     if(ethers.isAddress(accPointer)) {
 
-        const index = seekAccount(accPointer);
+        const index = allAccounts.findIndex(wallet => wallet.address === accPointer);
         deleteByIndex(index);
 
     }

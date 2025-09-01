@@ -46,13 +46,3 @@ export function deleteByIndex(index) {
     }
 
 }
-
-export function seekAccount(address) {
-
-    for (let i = 0; i < allAccounts.length; i++) {
-        if(allAccounts[i].address == address) {
-            return i;
-        }
-    }
-
-}

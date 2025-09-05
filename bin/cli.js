@@ -11,7 +11,15 @@ import {
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
 import {
- addAccounts, getAccounts, createAccounts, deleteAccount, createHD, getHDAccounts, addHD, getAllAccounts
+    addAccounts,
+    getAccounts,
+    createAccounts,
+    deleteAccount,
+    createHD,
+    getHDAccounts,
+    addHD,
+    getAllAccounts,
+    connectWallet
     } from '../src/services/wallet.js';
 
 const r = repl.start({
@@ -43,3 +51,4 @@ r.context.allWallets = getAllAccounts;
 r.context.wallets = getAccounts;
 r.context.hdWallets = getHDAccounts;
 r.context.removeWallet = deleteAccount;
+r.context.connectWallet = connectWallet;

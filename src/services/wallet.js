@@ -23,12 +23,14 @@ export function addAccounts(privKeyArr) {
         allAccounts.push({
             index: allAccounts.length,
             address: newAccount.address,
-            privateKey: privKeyArr
+            privateKey: privKeyArr,
+            type: 'user-imported'
         });
         accounts.push({
             index: allAccounts.length - 1,
             address: newAccount.address,
-            privateKey: privKeyArr
+            privateKey: privKeyArr,
+            type: 'user-imported'
         });
         console.log(allAccounts[newFrom]);
     }
@@ -65,6 +67,7 @@ export function addHD(phrase, count = 10) {
             address: hdWallet.address,
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
+            type: 'user-imported',
             path: hdWallet.path,
             depth: hdWallet.depth
         });
@@ -73,6 +76,7 @@ export function addHD(phrase, count = 10) {
             address: hdWallet.address,
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
+            type: 'user-imported',
             path: hdWallet.path,
             depth: hdWallet.depth
         });
@@ -93,12 +97,14 @@ export function createAccounts(count = 1) {
         allAccounts.push({
             index: allAccounts.length,
             address:  newAccounts[i].address,
-            privateKey: newAccounts[i].privateKey
+            privateKey: newAccounts[i].privateKey,
+            type: 'user-generated'
         });
         accounts.push({
             index: allAccounts.length - 1,
             address: newAccounts[i].address,
-            privateKey: newAccounts[i].privateKey
+            privateKey: newAccounts[i].privateKey,
+            type: 'user-generated'
         })
 
     }
@@ -120,6 +126,7 @@ export function createHD(count = 10) {
             address: hdWallet.address,
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
+            type: 'user-generated',
             path: hdWallet.path,
             depth: hdWallet.depth
         });
@@ -128,6 +135,7 @@ export function createHD(count = 10) {
             address: hdWallet.address,
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
+            type: 'user-generated',
             path: hdWallet.path,
             depth: hdWallet.depth
         });
@@ -213,6 +221,41 @@ export function deleteAccount(accPointer) {
 
         console.log(allAccounts);
         return;
+    }
+
+}
+
+export function connectWallet() {
+
+    try {
+
+        provider.listAccounts().then((addressArr) => {
+
+            for (let i = 0; i < addressArr.length; i++) {
+                
+                provider.getSigner(addressArr[i].address).then((accSigner) => {
+
+                    allAccounts.push({
+                        index: allAccounts.length,
+                        address: addressArr[i].address,
+                        type: 'node-managed', // Indicate this is managed by the node
+                        signer: accSigner // Store signer reference
+                    })
+                    accounts.push({
+                        index: allAccounts.length - 1,
+                        address: addressArr[i].address,
+                        type: 'node-managed', // Indicate this is managed by the node
+                        signer: accSigner // Store signer reference
+                    }) 
+
+                })
+
+            }
+
+        })
+
+    } catch(err) {
+        console.error(err);
     }
 
 }

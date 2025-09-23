@@ -18,7 +18,7 @@ export function addAccounts(privKeyArr) {
 
     const newFrom = allAccounts.length;
 
-    if(typeof privKeyArr == 'string'){
+    if(typeof privKeyArr === 'string'){
         const newAccount = new ethers.Wallet(privKeyArr, provider);
         allAccounts.push({
             index: allAccounts.length,
@@ -176,7 +176,7 @@ export function deleteAccount(accPointer) {
 
     }
 
-    if(typeof accPointer == 'number') {
+    if(typeof accPointer === 'number') {
 
         deleteByIndex(accPointer);
         console.log(allAccounts);
@@ -254,6 +254,57 @@ export function connectWallet() {
 
         })
 
+    } catch(err) {
+        console.error(err);
+    }
+
+}
+
+export function getWalletInfo(accPointer) {
+
+    try {
+
+        if(!accPointer && accPointer != 0) {
+            throw new Error('Error: Empty input is NOT valid!');
+        }
+
+        if(typeof accPointer === 'number') {
+
+            const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
+            const accInfo = allAccounts[index];
+            
+            provider.getTransactionCount(accInfo.address).then((count) => {
+
+                accInfo.nonce = count;
+                provider.getBalance(accInfo.address).then((balance) => {
+
+                    accInfo.balance = balance;
+                    console.log(accInfo);
+
+                })
+
+            })
+
+        }
+
+        if(ethers.isAddress(accPointer)) {
+
+            const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
+            const accInfo = allAccounts[index];
+            
+            provider.getTransactionCount(accInfo.address).then((count) => {
+
+                accInfo.nonce = count;
+                provider.getBalance(accInfo.address).then((balance) => {
+
+                    accInfo.balance = balance;
+                    console.log(accInfo);
+
+                })
+
+            })  
+
+        }
     } catch(err) {
         console.error(err);
     }

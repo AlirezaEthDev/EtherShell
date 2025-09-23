@@ -19,7 +19,8 @@ import {
     getHDAccounts,
     addHD,
     getAllAccounts,
-    connectWallet
+    connectWallet,
+    getWalletInfo
     } from '../src/services/wallet.js';
 
 const r = repl.start({
@@ -47,8 +48,11 @@ r.context.addWallets = addAccounts;
 r.context.addHDWallets = addHD;
 r.context.newWallets = createAccounts;
 r.context.newHDWallets = createHD;
-r.context.allWallets = getAllAccounts;
-r.context.wallets = getAccounts;
-r.context.hdWallets = getHDAccounts;
 r.context.removeWallet = deleteAccount;
 r.context.connectWallet = connectWallet;
+
+// View wallets
+r.context.wallets = getAccounts;
+r.context.allWallets = getAllAccounts;
+r.context.hdWallets = getHDAccounts;
+r.context.walletInfo = getWalletInfo

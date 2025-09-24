@@ -23,6 +23,8 @@ import {
     getWalletInfo
     } from '../src/services/wallet.js';
 
+import { deploy } from '../src/services/deployment.js';
+
 const r = repl.start({
     prompt: 'EtherShell> ',
     ignoreUndefined: true
@@ -56,3 +58,6 @@ r.context.wallets = getAccounts;
 r.context.allWallets = getAllAccounts;
 r.context.hdWallets = getHDAccounts;
 r.context.walletInfo = getWalletInfo
+
+// Deploy
+r.context.deploy = deploy;

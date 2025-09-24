@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { provider } from './network.js';
-import { deleteByIndex, deleteByIndexArr } from '../utils/accounter.js';
+import { deleteByIndex, deleteByIndexArr, getAccountInfo } from '../utils/accounter.js';
 
 export let allAccounts = [];
 export let accounts = [];
@@ -271,40 +271,23 @@ export function getWalletInfo(accPointer) {
         if(typeof accPointer === 'number') {
 
             const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
-            const accInfo = allAccounts[index];
-            
-            provider.getTransactionCount(accInfo.address).then((count) => {
-
-                accInfo.nonce = count;
-                provider.getBalance(accInfo.address).then((balance) => {
-
-                    accInfo.balance = balance;
-                    console.log(accInfo);
-
-                })
-
-            })
+            getAccountInfo(index);
 
         }
 
         if(ethers.isAddress(accPointer)) {
 
             const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
-            const accInfo = allAccounts[index];
-            
-            provider.getTransactionCount(accInfo.address).then((count) => {
-
-                accInfo.nonce = count;
-                provider.getBalance(accInfo.address).then((balance) => {
-
-                    accInfo.balance = balance;
-                    console.log(accInfo);
-
-                })
-
-            })  
+            getAccountInfo(index);
 
         }
+
+        if(Array.isArray(accPointer)) {
+
+            getAccountInfo(accPointer);
+
+        }
+        
     } catch(err) {
         console.error(err);
     }

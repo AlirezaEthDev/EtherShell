@@ -1,11 +1,18 @@
 import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
+import { provider } from '../services/network.js';
 
 export function deleteByIndex(index) {
+
     if (Array.isArray(index)) {
+
         deleteByIndexArr(index);
+
     } else if (typeof index === 'number') {
+
         _deleteBySingIndex(index);
+
     }
+
 }
 
 export function deleteByIndexArr(indices) {
@@ -21,6 +28,56 @@ export function deleteByIndexArr(indices) {
     for (const index of sortedIndices) {
         _deleteBySingIndex(index);
     }
+}
+
+export function getAccountInfo(index) {
+
+    if (Array.isArray(index)) {
+
+        _getAccArrInfo(index);
+
+    } else if (typeof index === 'number') {
+
+        _getAccountInfo(index);
+
+    }
+
+}
+
+function _getAccArrInfo(_indices) {
+
+    if (!_indices || !_indices.length) {
+        console.error('Error: Empty input is NOT valid!');
+        return;
+    }
+
+    // Sort indices in descending order to avoid shifting issues
+    const sortedIndices = [..._indices].sort((a, b) => b - a);
+    
+    // Delete each index from highest to lowest
+    for (const index of sortedIndices) {
+        _getAccountInfo(index);
+    }
+
+}
+
+function _getAccountInfo(_index) {
+
+    const accInfo = allAccounts[_index];
+    
+    provider.getTransactionCount(accInfo.address).then((count) => {
+
+        accInfo.nonce = count;
+        provider.getBalance(accInfo.address).then((balance) => {
+
+            accInfo.balance = balance;
+            accInfo.contracts = [];
+            console.log(accInfo);
+
+        })
+
+    })
+
 }
 
 function _deleteBySingIndex(_index) {

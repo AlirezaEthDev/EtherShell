@@ -3,6 +3,9 @@ import fs from 'fs';
 import solc from 'solc';
 import { check } from './dir.js';
 import { getCompilerOptions } from '../services/build.js';
+import { LocalStorage } from 'node-localstorage';
+
+const localStorage = new LocalStorage('../localStorage');
 
 export function loadSolcVersion(version){
   return new Promise((resolve, reject) => {
@@ -104,5 +107,9 @@ export function build(fullpath, selectedContracts, buildPath){
         // Save on metadata
         const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
         fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+
+        // Store  abis and bytecode on local storage
+        localStorage.setItem(`${contractName}.abi`, abisPath);
+        localStorage.setItem(`${contractName}.bytecode`, bytecodePath);
     })
 }

@@ -26,6 +26,7 @@
   "dependencies": {
     "commander": "^12.1.0",
     "ethers": "^6.13.0",
+    "node-localstorage": "^3.0.5",
     "solc": "^0.8.29"
   },
   "preferGlobal": true,

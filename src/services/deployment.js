@@ -4,7 +4,7 @@ import { provider } from './network.js';
 import { allAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 
-const localStorage = new LocalStorage('../localStorage');
+const localStorage = new LocalStorage('./localStorage');
 
 export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc) {
 
@@ -31,8 +31,8 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
             wallet = wallet.connect(provider);
         }
 
-        const abiPath = abiLoc || localStorage.getItem(`${contractName}.abi`);
-        const bytecodePath = bytecodeLoc || localStorage.getItem(`${contractName}.bytecode`);
+        const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
+        const bytecodePath = bytecodeLoc || localStorage.getItem(`${contractName}_bytecode`);
 
         const abi  = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
         const bytecode = JSON.parse(fs.readFileSync(bytecodePath, 'utf8'));

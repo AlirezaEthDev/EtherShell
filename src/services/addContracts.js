@@ -29,8 +29,8 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
         let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, provider);
 
         if(chain) {
-            provider = new ethers.JsonRpcProvider(chain);
-            wallet = wallet.connect(provider);
+            const newProvider = new ethers.JsonRpcProvider(chain);
+            wallet = wallet.connect(newProvider);
         }
 
         const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
@@ -53,7 +53,7 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
 
 }
 
-export function addContract(contractAddr, accIndex, chain, abiLoc) {
+export function add(contractAddr, accIndex, abiLoc, chain) {
 
     try {
 
@@ -65,14 +65,20 @@ export function addContract(contractAddr, accIndex, chain, abiLoc) {
             accIndex = 0;
         }
 
+        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, provider);
+
         if(chain) {
-            provider = new ethers.JsonRpcProvider(chain);
-            wallet = wallet.connect(provider);
+            const newProvider = new ethers.JsonRpcProvider(chain);
+            wallet = wallet.connect(newProvider);
         }
 
-        const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
+        if(!abiLoc) {
+            throw new Error('ABI path may not be null or undefined!');
+        }
 
-        const newContract = new ethers.Contract(contractAddr, abiPath, wallet);
+        const abi  = JSON.parse(fs.readFileSync(abiLoc, 'utf8'));
+
+        const newContract = new ethers.Contract(contractAddr, abi, wallet);
 
         contracts.push(newContract);
         

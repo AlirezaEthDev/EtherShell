@@ -23,7 +23,7 @@ import {
     getWalletInfo
     } from '../src/services/wallet.js';
 
-import { deploy } from '../src/services/addContracts.js';
+import { deploy, add } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 
 const r = repl.start({
@@ -47,10 +47,10 @@ r.context.compile = compile;
 r.context.clean = deleteDirectory;
 
 // Set wallet
-r.context.addWallets = addAccounts;
-r.context.addHDWallets = addHD;
-r.context.newWallets = createAccounts;
-r.context.newHDWallets = createHD;
+r.context.addWallet = addAccounts;
+r.context.addHDWallet = addHD;
+r.context.newWallet = createAccounts;
+r.context.newHDWallet = createHD;
 r.context.removeWallet = deleteAccount;
 r.context.connectWallet = connectWallet;
 
@@ -60,8 +60,9 @@ r.context.allWallets = getAllAccounts;
 r.context.hdWallets = getHDAccounts;
 r.context.walletInfo = getWalletInfo
 
-// Deploy
+// Add contract
 r.context.deploy = deploy;
+r.context.addContract = add;
 
 // Contract
 r.context.contracts = getContracts;

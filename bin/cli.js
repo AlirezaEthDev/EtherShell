@@ -23,7 +23,8 @@ import {
     getWalletInfo
     } from '../src/services/wallet.js';
 
-import { deploy } from '../src/services/deployment.js';
+import { deploy } from '../src/services/addContracts.js';
+import { getContracts } from '../src/services/contracts.js';
 
 const r = repl.start({
     prompt: 'EtherShell> ',
@@ -61,3 +62,6 @@ r.context.walletInfo = getWalletInfo
 
 // Deploy
 r.context.deploy = deploy;
+
+// Contract
+r.context.contracts = getContracts;

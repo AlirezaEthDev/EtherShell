@@ -6,11 +6,14 @@ import { LocalStorage } from 'node-localstorage';
 
 const localStorage = new LocalStorage('./localStorage');
 
-export let contracts = [];
+export const contracts = new Map();
 
-export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc) {
+export async function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc) {
 
     try {
+
+        let currentProvider;
+        let connectedChain;
 
         if(!contractName) {
             throw new Error('Contract name is empty');
@@ -26,12 +29,14 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
             accIndex = 0;
         }
 
-        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, provider);
-
         if(chain) {
-            const newProvider = new ethers.JsonRpcProvider(chain);
-            wallet = wallet.connect(newProvider);
+            currentProvider = new ethers.JsonRpcProvider(chain);
+        } else {
+            currentProvider = provider;
         }
+
+        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
+        connectedChain = await currentProvider.getNetwork();
 
         const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
         const bytecodePath = bytecodeLoc || localStorage.getItem(`${contractName}_bytecode`);
@@ -42,7 +47,17 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
         const factory = new ethers.ContractFactory(abi, bytecode, wallet);
         factory.deploy(...contractArgs).then((deployTx) => {
             deployTx.waitForDeployment().then((result) => {
-                contracts.push(result);
+                // Extend contract object
+                result.index = Array.from(contracts.values()).length;
+                result.name = contractName;
+                result.chain = connectedChain.name;
+                result.chainId = connectedChain.chainId;
+                result.deployType = 'ethershell-deployed',
+                result.provider = currentProvider;
+
+                // Add to contract list
+                contracts.set(contractName, result);
+
                 console.log(result);
             })
         })
@@ -53,9 +68,12 @@ export function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc)
 
 }
 
-export function add(contractAddr, accIndex, abiLoc, chain) {
+export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
 
     try {
+
+        let currentProvider;
+        let connectedChain;
 
         if(!contractAddr) {
             throw new Error('Contract address may not be null or undefined!');
@@ -65,12 +83,14 @@ export function add(contractAddr, accIndex, abiLoc, chain) {
             accIndex = 0;
         }
 
-        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, provider);
-
         if(chain) {
-            const newProvider = new ethers.JsonRpcProvider(chain);
-            wallet = wallet.connect(newProvider);
+            currentProvider = new ethers.JsonRpcProvider(chain);
+        } else {
+            currentProvider = provider;
         }
+
+        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
+        connectedChain = await currentProvider.getNetwork();
 
         if(!abiLoc) {
             throw new Error('ABI path may not be null or undefined!');
@@ -80,8 +100,18 @@ export function add(contractAddr, accIndex, abiLoc, chain) {
 
         const newContract = new ethers.Contract(contractAddr, abi, wallet);
 
-        contracts.push(newContract);
-        
+        // Extend contract object
+        newContract.index = Array.from(contracts.values()).length;
+        newContract.name = contractName;
+        newContract.chain = connectedChain.name;
+        newContract.chainId = connectedChain.chainId;
+        newContract.deployType = 'pre-deployed',
+        newContract.provider = currentProvider;
+
+        // Add to contract list
+        contracts.set(contractName, newContract);
+
+        console.log(newContract);
 
     } catch(err) {
         console.error(err);

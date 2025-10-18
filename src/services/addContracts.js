@@ -3,6 +3,7 @@ import fs from 'fs';
 import { provider } from './network.js';
 import { allAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
+import { r } from '../../bin/cli.js';
 
 const localStorage = new LocalStorage('./localStorage');
 
@@ -58,6 +59,9 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
                 // Add to contract list
                 contracts.set(contractName, result);
 
+                // Add to REPL context
+                r.context[contractName] = result;
+
                 console.log(result);
             })
         })
@@ -110,6 +114,9 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
 
         // Add to contract list
         contracts.set(contractName, newContract);
+
+        // Add to REPL context
+        r.context[contractName] = newContract;
 
         console.log(newContract);
 

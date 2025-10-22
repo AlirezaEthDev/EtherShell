@@ -35,6 +35,7 @@ export function build(fullpath, selectedContracts, buildPath){
 
     const compilerConfig = getCompilerOptions();
     const source = fs.readFileSync(fullpath, 'utf8');
+
     const filename = path.basename(fullpath, '.sol');
     
     const input = {
@@ -66,6 +67,10 @@ export function build(fullpath, selectedContracts, buildPath){
     }
     
     const output = JSON.parse(solc.compile(JSON.stringify(input)));
+
+    if(output.errors) {
+      throw output.errors;
+    }
     
     // Generate sub-paths of build
     const artifacts = path.join(buildPath, 'artifacts');

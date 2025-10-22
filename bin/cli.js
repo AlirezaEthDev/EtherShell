@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import repl from 'repl';
-import vm from 'vm';
+import util from 'util';
 import { 
     updateCompiler,
     currentCompiler,
@@ -55,7 +55,7 @@ r.context.version = currentCompiler;
 r.context.compiler = updateCompiler;
 r.context.options = getCompilerOptions;
 r.context.compilerOpts = compilerOptions;
-r.context.build = compile;
+r.context.compile = compile;
 
 // Clean build folder
 r.context.clean = deleteDirectory;

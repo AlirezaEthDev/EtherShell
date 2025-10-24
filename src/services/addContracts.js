@@ -62,7 +62,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
                 // Add to REPL context
                 r.context[contractName] = result;
 
-                console.log(result);
+                const deployHash = deployTx.deploymentTransaction().hash;
+
+                provider.getTransaction(deployHash).then((tx) => {
+                    delete tx.data;
+                    console.log(tx);
+                });
             })
         })
 

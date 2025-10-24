@@ -62,17 +62,24 @@ export function getCompilerOptions() {
   return { ...compilerConfig };
 }
 
-export function compile(fullpath, selectedContracts, buildPath){
+export function compile(fullPath, selectedContracts, buildPath){
   try{
     // Set default path if buildPath is undefined
     if(!buildPath){    
-      buildPath = path.resolve('..', 'build');
+      buildPath = path.resolve('.', 'build');
       [buildPath].forEach(check); 
     }
-    const fileExt = path.extname(fullpath);
+
+    let fileExt;
+
+    if(!fullPath) {
+      fullPath = path.resolve('.', 'contracts');
+    } else {
+      fileExt = path.extname(fullPath);
+    }
 
     if(!fileExt){
-      const files = fs.readdirSync(fullpath);
+      const files = fs.readdirSync(fullPath);
       let solFiles = [];
       if(!files.length){
         throw 'The directory is empty!';
@@ -80,7 +87,7 @@ export function compile(fullpath, selectedContracts, buildPath){
         for(let i = 0; i < files.length; i++){
           const fileExtension = path.extname(files[i]);
           if(fileExtension == '.sol'){
-            const solFilePath = path.join(fullpath, `${files[i]}`);
+            const solFilePath = path.join(fullPath, `${files[i]}`);
             solFiles.push(solFilePath);
           }
         }
@@ -94,7 +101,7 @@ export function compile(fullpath, selectedContracts, buildPath){
         }
       }
     }else{
-      build(fullpath, selectedContracts, buildPath);
+      build(fullPath, selectedContracts, buildPath);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
   }catch(err){

@@ -28,15 +28,15 @@ export async function setVersion(version, solcInstance){
   return solcInstance;
 }
 
-export function build(fullpath, selectedContracts, buildPath){
+export function build(fullPath, selectedContracts, buildPath){
     if(!selectedContracts){
       selectedContracts = [];
     }
 
     const compilerConfig = getCompilerOptions();
-    const source = fs.readFileSync(fullpath, 'utf8');
+    const source = fs.readFileSync(fullPath, 'utf8');
 
-    const filename = path.basename(fullpath, '.sol');
+    const filename = path.basename(fullPath, '.sol');
     
     const input = {
         language: 'Solidity',

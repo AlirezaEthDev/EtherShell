@@ -1,7 +1,6 @@
 import path from 'path';
-import fs from 'fs';
 import solc from 'solc';
-import { check } from '../utils/dir.js';
+import { check, collectSolFiles } from '../utils/dir.js';
 import { setVersion, build } from '../utils/builder.js';
 
 let currentSolcInstance = solc; // default local compiler
@@ -65,13 +64,12 @@ export function getCompilerOptions() {
 export function compile(fullPath, selectedContracts, buildPath){
   try{
     // Set default path if buildPath is undefined
-    if(!buildPath){    
+    if(!buildPath){
       buildPath = path.resolve('.', 'build');
-      [buildPath].forEach(check); 
+      [buildPath].forEach(check);
     }
 
     let fileExt;
-
     if(!fullPath) {
       fullPath = path.resolve('.', 'contracts');
     } else {
@@ -79,32 +77,21 @@ export function compile(fullPath, selectedContracts, buildPath){
     }
 
     if(!fileExt){
-      const files = fs.readdirSync(fullPath);
-      let solFiles = [];
-      if(!files.length){
-        throw 'The directory is empty!';
-      }else{
-        for(let i = 0; i < files.length; i++){
-          const fileExtension = path.extname(files[i]);
-          if(fileExtension == '.sol'){
-            const solFilePath = path.join(fullPath, `${files[i]}`);
-            solFiles.push(solFilePath);
-          }
+      const solFiles = collectSolFiles(fullPath);
+      
+      if(!solFiles.length){
+        throw 'There is no smart contract in the directory!';
+      } else {
+        for(let i = 0; i < solFiles.length; i++){
+          build(solFiles[i], selectedContracts, buildPath);
         }
-        if(!solFiles.length){
-          throw 'There is no smart contract in the directory!';
-        }else{
-          for(let i = 0; i < solFiles.length; i++){
-            build(solFiles[i], selectedContracts, buildPath);
-          }
-          console.log(`Contract compiled into ${path.resolve(buildPath)}`);
-        }
+        console.log(`Contracts compiled into ${path.resolve(buildPath)}`);
       }
-    }else{
+    } else {
       build(fullPath, selectedContracts, buildPath);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
-  }catch(err){
-    console.error(err);
+  } catch(err){
+      console.error(err);
   }
 }

@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import solc from 'solc';
-import { check } from './dir.js';
+import { check, findImports } from './dir.js';
 import { getCompilerOptions } from '../services/build.js';
 import { LocalStorage } from 'node-localstorage';
 
@@ -29,92 +29,97 @@ export async function setVersion(version, solcInstance){
 }
 
 export function build(fullPath, selectedContracts, buildPath){
-    if(!selectedContracts){
-      selectedContracts = [];
-    }
+  if(!selectedContracts){
+    selectedContracts = [];
+  }
 
-    const compilerConfig = getCompilerOptions();
-    const source = fs.readFileSync(fullPath, 'utf8');
-
-    const filename = path.basename(fullPath, '.sol');
-    
-    const input = {
-        language: 'Solidity',
-        sources: {
-          [`${filename}`]: {
-            content: source,
-          },
+  const compilerConfig = getCompilerOptions();
+  
+  // Get the directory containing the contract
+  const contractDir = path.dirname(fullPath);
+  const filename = path.basename(fullPath, '.sol');
+  const source = fs.readFileSync(fullPath, 'utf8');
+  
+  const input = {
+    language: 'Solidity',
+    sources: {
+      [`${filename}`]: {
+        content: source,
+      },
+    },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['*'],
         },
-        settings: {
-          outputSelection: {
-            '*': {
-              '*': ['*'],
-            },
-          },
-        },
+      },
     }
+  };
 
-    // Apply global compiler configuration
-    if (compilerConfig.optimizer) {
-        input.settings.optimizer = {
-            enabled: true,
-            runs: compilerConfig.optimizerRuns
-        };
+  // Apply global compiler configuration
+  if (compilerConfig.optimizer) {
+    input.settings.optimizer = {
+      enabled: true,
+      runs: compilerConfig.optimizerRuns
+    };
+  }
+  if (compilerConfig.viaIR) {
+    input.settings.viaIR = true;
+  }
+
+  // Compile with import callback
+  const output = JSON.parse(
+    solc.compile(
+      JSON.stringify(input),
+      { import: (importPath) => findImports(importPath, contractDir) }
+    )
+  );
+
+  if(output.errors) {
+    // Filter out warnings, only throw on actual errors
+    const errors = output.errors.filter(err => err.severity === 'error');
+    if(errors.length > 0) {
+      throw errors;
     }
+  }
 
-    if (compilerConfig.viaIR) {
-        input.settings.viaIR = true;
+  // Generate sub-paths of build
+  const artifacts = path.join(buildPath, 'artifacts');
+  const abis = path.join(buildPath, 'abis');
+  const bytecode = path.join(buildPath, 'bytecode');
+  const metadata = path.join(buildPath, 'metadata');
+  const subPaths = [
+      artifacts,
+      abis,
+      bytecode,
+      metadata
+  ];
+
+  // Ensure all sub-paths exist
+  subPaths.forEach(check);
+  const allContracts = Object.keys(output.contracts[`${filename}`]);
+  const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
+    (contractName) => {
+      return selectedContracts.includes(contractName);
     }
-    
-    const output = JSON.parse(solc.compile(JSON.stringify(input)));
-
-    if(output.errors) {
-      throw output.errors;
-    }
-    
-    // Generate sub-paths of build
-    const artifacts = path.join(buildPath, 'artifacts');
-    const abis = path.join(buildPath, 'abis');
-    const bytecode = path.join(buildPath, 'bytecode');
-    const metadata = path.join(buildPath, 'metadata');
-    
-    const subPaths = [
-        artifacts,
-        abis,
-        bytecode,
-        metadata
-      ]
-    
-    // Ensure all sub-paths exist
-    subPaths.forEach(check);
-    
-    const allContracts = Object.keys(output.contracts[`${filename}`]);
-    const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
-        (contractName) => {
-          return selectedContracts.includes(contractName);
-        } 
-      ): allContracts;
-    contractsToSave.forEach((contractName) => {
-        const contractsData = output.contracts[`${filename}`][contractName];
-    
-        // Save on artifacts
-        const artifactsPath = path.join(artifacts, `${contractName}.json`);
-        fs.writeFileSync(artifactsPath, JSON.stringify(contractsData, null, 2));
-    
-        // Save on abis
-        const abisPath = path.join(abis, `${contractName}.abi.json`);
-        fs.writeFileSync(abisPath, JSON.stringify(contractsData.abi, null, 2));
-    
-        // Save on bytecode
-        const bytecodePath = path.join(bytecode, `${contractName}.bin`);
-        fs.writeFileSync(bytecodePath, JSON.stringify(contractsData.evm.bytecode, null, 2));
-    
-        // Save on metadata
-        const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
-        fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
-
-        // Store  abis and bytecode on local storage
-        localStorage.setItem(`${contractName}_abi`, abisPath);
-        localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
-    })
+  ): allContracts;
+  contractsToSave.forEach((contractName) => {
+    const contractsData = output.contracts[`${filename}`][contractName];
+    // Save on artifacts
+    const artifactsPath = path.join(artifacts, `${contractName}.json`);
+    fs.writeFileSync(artifactsPath, JSON.stringify(contractsData, null, 2));
+    // Save on abis
+    const abisPath = path.join(abis, `${contractName}.abi.json`);
+    fs.writeFileSync(abisPath, JSON.stringify(contractsData.abi, null, 2));
+    // Save on bytecode
+    const bytecodePath = path.join(bytecode, `${contractName}.bin`);
+    fs.writeFileSync(bytecodePath, JSON.stringify(contractsData.evm.bytecode, null, 2));
+    // Save on metadata
+    const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
+    fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+    // Store abis and bytecode on local storage
+    localStorage.setItem(`${contractName}_abi`, abisPath);
+    localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
+  });
 }
+

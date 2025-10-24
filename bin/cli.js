@@ -55,7 +55,7 @@ r.context.version = currentCompiler;
 r.context.compiler = updateCompiler;
 r.context.options = getCompilerOptions;
 r.context.compilerOpts = compilerOptions;
-r.context.compile = compile;
+r.context.build = compile;
 
 // Clean build folder
 r.context.clean = deleteDirectory;

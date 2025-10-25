@@ -1,0 +1,40 @@
+{
+  "name": "ethershell",
+  "version": "1.0.0",
+  "description": "Interactive JavaScript console for Ethereum smart contract management",
+  "type": "module",
+  "bin": {
+    "ethershell": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "dev": "nodemon bin/cli.js",
+    "test": "mocha tests/**/*.test.js",
+    "lint": "eslint .",
+    "prepublishOnly": "npm test && npm run lint"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ethereum",
+    "cli",
+    "smart-contracts",
+    "solidity",
+    "blockchain"
+  ],
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ethers": "^6.13.0",
+    "node-localstorage": "^3.0.5",
+    "solc": "^0.8.29",
+    "vm": "^0.1.0"
+  },
+  "preferGlobal": true,
+  "files": [
+    "bin/",
+    "src/",
+    "LICENSE",
+    "README.md"
+  ]
+}

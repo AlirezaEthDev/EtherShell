@@ -39,5 +39,3 @@ EtherShell is an interactive Node.js command-line interface designed to streamli
   ethershell> setCompiler('v0.8.28+commit.7893614a')  
   Loaded solc version: 0.8.28+commit.7893614a.Emscripten.clang
   ```
-
-

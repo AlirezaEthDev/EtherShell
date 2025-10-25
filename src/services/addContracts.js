@@ -46,30 +46,27 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const bytecode = JSON.parse(fs.readFileSync(bytecodePath, 'utf8'));
 
         const factory = new ethers.ContractFactory(abi, bytecode, wallet);
-        factory.deploy(...contractArgs).then((deployTx) => {
-            deployTx.waitForDeployment().then((result) => {
-                // Extend contract object
-                result.index = Array.from(contracts.values()).length;
-                result.name = contractName;
-                result.chain = connectedChain.name;
-                result.chainId = connectedChain.chainId;
-                result.deployType = 'ethershell-deployed',
-                result.provider = currentProvider;
+        const deployTx = await factory.deploy(...contractArgs);
+        await deployTx.waitForDeployment();
 
-                // Add to contract list
-                contracts.set(contractName, result);
+        // Extend contract object
+        deployTx.index = Array.from(contracts.values()).length;
+        deployTx.name = contractName;
+        deployTx.chain = connectedChain.name;
+        deployTx.chainId = connectedChain.chainId;
+        deployTx.deployType = 'ethershell-deployed',
+        deployTx.provider = currentProvider;
 
-                // Add to REPL context
-                r.context[contractName] = result;
+        // Add to contract list
+        contracts.set(contractName, deployTx);
 
-                const deployHash = deployTx.deploymentTransaction().hash;
+        // Add to REPL context
+        r.context[contractName] = deployTx;
 
-                provider.getTransaction(deployHash).then((tx) => {
-                    delete tx.data;
-                    console.log(tx);
-                });
-            })
-        })
+        const deployHash = deployTx.deploymentTransaction().hash;
+        const tx = await provider.getTransaction(deployHash);
+        delete tx.data;
+        console.log(tx);
 
     } catch(err) {
         console.error(err);
@@ -123,7 +120,18 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         // Add to REPL context
         r.context[contractName] = newContract;
 
-        console.log(newContract);
+        // Add result
+        const result = {
+            index: newContract.index,
+            name: newContract.name,
+            address: newContract.target,
+            chain: newContract.chain,
+            chainId: newContract.chainId,
+            deployType: newContract.deployType,
+            provider: newContract.provider
+        }
+
+        console.log(result);
 
     } catch(err) {
         console.error(err);

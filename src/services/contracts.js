@@ -1,22 +1,27 @@
 import { ethers } from 'ethers';
 import { contracts } from './addContracts.js';
+import { getContArr } from '../utils/contractLister.js';
 
-export async function getContracts() {
+export async function getContracts(contPointer) {
 
-    let contractsArray = [];
+    const contArray = await getContArr();
+    let result;
 
-    for (const x of contracts.values()) {
-        let contract = {
-            index: x.index,
-            name: x.name,
-            address: x.target,
-            chain: x.chain,
-            chainId: x.chainId,
-            deployType: x.deployType,
-            balance: await x.provider.getBalance(x.target)
-        }
-        contractsArray.push(contract);
+    if(!contPointer && contPointer != 0) {
+        result = contArray;
+    } else if(typeof contPointer === 'number') {
+        result = contArray[contPointer];
+    } else if(ethers.isAddress(contPointer)) {
+        const index = contArray.findIndex(contract => contract.address == contPointer);
+        result = contArray[index];
+    } else if(typeof contPointer === 'string') {
+        const index = contArray.findIndex(contract => contract.name == contPointer);
+        result = contArray[index];
+    } else {
+        throw new Error('Input is NOT valid!');
     }
 
-    console.log(contractsArray);
+    console.log(result);
+
+
 }

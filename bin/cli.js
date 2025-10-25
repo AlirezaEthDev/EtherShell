@@ -2,6 +2,7 @@
 
 import repl from 'repl';
 import util from 'util';
+import { customEval } from '../src/utils/replHelper.js';
 import { 
     updateCompiler,
     currentCompiler,
@@ -30,17 +31,8 @@ import { getContracts } from '../src/services/contracts.js';
 export const r = repl.start({
     prompt: 'EtherShell> ',
     ignoreUndefined: true,
-    // Custom writer: intercept Promise results
+    eval: customEval,
     writer: output => {
-        // If it's a Promise, await and print its resolution
-        if (output && typeof output.then === 'function') {
-        output
-            .then(resolved => console.log(resolved))
-            .catch(err => console.error(err));
-        // Return empty string so REPL prompt isn't preceded by undefined
-        return '';
-        }
-        // Fallback to the default util.inspect for other types
         return util.inspect(output, { colors: true, depth: null });
     }
 });

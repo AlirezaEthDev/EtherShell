@@ -26,16 +26,3 @@ EtherShell is an interactive Node.js command-line interface designed to streamli
   ```
   ethershell --version  
   ```
-  # Basic Usage
-  
-  1) Compiler Operations:
-  * Initialize default compiler:
-  ```
-  ethershell> compilerVersion()  
-  '0.8.21+commit.d9974bed' 
-  ```
-  * Load specific compiler version:
-  ```
-  ethershell> setCompiler('v0.8.28+commit.7893614a')  
-  Loaded solc version: 0.8.28+commit.7893614a.Emscripten.clang
-  ```

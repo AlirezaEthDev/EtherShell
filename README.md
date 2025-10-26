@@ -1,6 +1,6 @@
-# 🔷 EtherShell - Interactive Ethereum Smart Contract REPL
+# 🔷 EtherShell - Interactive Ethereum Smart Contract Console
 
-An interactive Node.js command-line interface (REPL) for Ethereum smart contract development. Write, compile, deploy, and manage smart contracts directly from the shell with an intuitive, Solidity-focused developer experience.
+An interactive Node.js console for Ethereum smart contract development. Write, compile, deploy, and manage smart contracts directly from the shell with an intuitive, Solidity-focused developer experience.
 
 **Perfect for:**
 - Smart contract developers who want a fast, interactive workflow
@@ -11,7 +11,7 @@ An interactive Node.js command-line interface (REPL) for Ethereum smart contract
 
 ## ✨ Features
 
-- **Interactive REPL Shell** - Built-in async support for all commands
+- **Interactive Shell** - Built-in async support for all commands
 - **Solidity Compilation** - Compile contracts with configurable optimization
 - **Smart Contract Deployment** - Deploy contracts to any EVM network
 - **Wallet Management** - Create, import, and manage wallets (regular & HD wallets)
@@ -41,7 +41,7 @@ npm start
 ### Basic Usage
 
 ```bash
-# Start the REPL
+# Start the console
 npm start
 
 # You should see:
@@ -258,7 +258,7 @@ EtherShell> deploy('MyToken', ['MyTokenName', 'MTK', 1000000], 0)
 // Deploy with custom chain
 EtherShell> deploy('MyContract', ['arg1', 'arg2'], 0, 'https://custom-rpc.url')
 
-// The deployed contract is automatically added to REPL context
+// The deployed contract is automatically added to console context
 EtherShell> MyToken
 Contract {
   target: '0xabcd...ef01',

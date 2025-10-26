@@ -340,12 +340,8 @@ EtherShell> MyToken.totalSupply()
 1000000n
 
 // State-changing functions (costs gas, requires signer)
-EtherShell> tx = MyToken.transfer('0xRecipientAddress', 100)
+EtherShell> MyToken.transfer('0xRecipientAddress', 100)
 ContractTransactionResponse { ... }
-
-// Wait for transaction
-EtherShell> receipt = tx.wait()
-ContractTransactionReceipt { ... }
 
 // Check balance
 EtherShell> MyToken.balanceOf('0x1234...5678')

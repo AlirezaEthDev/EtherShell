@@ -12,10 +12,12 @@ let compilerConfig = {
   viaIR: false
 };
 
-export function updateCompiler(version){
-  setVersion(version, currentSolcInstance)
-    .then((solcInstance) => currentSolcInstance = solcInstance)
-    .catch(err => console.error(err));
+export async function updateCompiler(version){
+  try{
+    currentSolcInstance = await setVersion(version, currentSolcInstance);
+  } catch(err) {
+    console.error(err);
+  }
 }
 
 export function currentCompiler(){

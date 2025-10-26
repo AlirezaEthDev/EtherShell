@@ -235,35 +235,24 @@ export function deleteAccount(accPointer) {
 
 }
 
-export function connectWallet() {
-
+export async function connectWallet() {
     try {
-
-        provider.listAccounts().then((addressArr) => {
-
-            for (let i = 0; i < addressArr.length; i++) {
-                
-                provider.getSigner(addressArr[i].address).then((accSigner) => {
-
-                    allAccounts.push({
-                        index: allAccounts.length,
-                        address: addressArr[i].address,
-                        type: 'node-managed', // Indicate this is managed by the node
-                        signer: accSigner // Store signer reference
-                    })
-                    accounts.push({
-                        index: allAccounts.length - 1,
-                        address: addressArr[i].address,
-                        type: 'node-managed', // Indicate this is managed by the node
-                        signer: accSigner // Store signer reference
-                    }) 
-
-                })
-
-            }
-
-        })
-
+        const addressArr = await provider.listAccounts();
+        for (let i = 0; i < addressArr.length; i++) {
+            const accSigner = await provider.getSigner(addressArr[i].address);
+            allAccounts.push({
+                index: allAccounts.length,
+                address: addressArr[i].address,
+                type: 'node-managed', // Indicate this is managed by the node
+                signer: accSigner // Store signer reference
+            })
+            accounts.push({
+                index: allAccounts.length - 1,
+                address: addressArr[i].address,
+                type: 'node-managed', // Indicate this is managed by the node
+                signer: accSigner // Store signer reference
+            }) 
+        }
     } catch(err) {
         console.error(err);
     }

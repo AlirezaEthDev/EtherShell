@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview EtherShell - Interactive CLI for Ethereum smart contract development
+ * @description Main entry point for the EtherShell REPL environment that provides
+ * an interactive command-line interface for compiling, deploying, and managing
+ * Ethereum smart contracts and wallets.
+ * @module cli
+ */
+
 import repl from 'repl';
 import util from 'util';
 import { customEval } from '../src/utils/replHelper.js';
@@ -28,6 +36,12 @@ import {
 import { deploy, add } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 
+/**
+ * REPL instance for EtherShell interactive environment
+ * @type {repl.REPLServer}
+ * @description Creates and configures the REPL server with custom evaluation
+ * and output formatting
+ */
 export const r = repl.start({
     prompt: 'EtherShell> ',
     ignoreUndefined: true,

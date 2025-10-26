@@ -1,20 +1,37 @@
+/**
+ * @fileoverview Account management utilities
+ * @description Internal utilities for managing account arrays, including deletion
+ * and information retrieval. Handles synchronization across multiple account arrays.
+ * @module accounter
+ */
+
 import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
 import { provider } from '../services/network.js';
 
+/**
+ * Delete account(s) by index
+ * @param {number|Array<number>|null} index - Account index, array of indices, or null to delete all
+ * @returns {void}
+ * @example
+ * deleteByIndex(0); // Delete account at index 0
+ * deleteByIndex([1, 3, 5]); // Delete multiple accounts
+ * deleteByIndex(null); // Delete all accounts
+ */
 export function deleteByIndex(index) {
-
     if (Array.isArray(index)) {
-
         deleteByIndexArr(index);
-
     } else if (typeof index === 'number') {
-
         _deleteBySingIndex(index);
-
     }
-
 }
 
+/**
+ * Delete multiple accounts by array of indices
+ * @param {Array<number>} indices - Array of account indices to delete
+ * @returns {void}
+ * @example
+ * deleteByIndexArr([0, 2, 4]);
+ */
 export function deleteByIndexArr(indices) {
     if (!indices || !indices.length) {
         console.error('Error: Empty input is NOT valid!');
@@ -30,22 +47,31 @@ export function deleteByIndexArr(indices) {
     }
 }
 
+/**
+ * Get account information including balance and nonce
+ * @async
+ * @param {number|Array<number>} index - Account index or array of indices
+ * @returns {Promise<void>}
+ * @example
+ * await getAccountInfo(0);
+ * await getAccountInfo([0, 1, 2]);
+ */
 export async function getAccountInfo(index) {
-
     if (Array.isArray(index)) {
-
         await _getAccArrInfo(index);
-
     } else if (typeof index === 'number') {
-
         await _getAccountInfo(index);
-
     }
-
 }
 
+/**
+ * Get information for multiple accounts (internal)
+ * @private
+ * @async
+ * @param {Array<number>} _indices - Array of account indices
+ * @returns {Promise<void>}
+ */
 async function _getAccArrInfo(_indices) {
-
     if (!_indices || !_indices.length) {
         console.error('Error: Empty input is NOT valid!');
         return;
@@ -58,20 +84,30 @@ async function _getAccArrInfo(_indices) {
     for (const index of sortedIndices) {
         await _getAccountInfo(index);
     }
-
 }
 
+/**
+ * Get information for a single account (internal)
+ * @private
+ * @async
+ * @param {number} _index - Account index
+ * @returns {Promise<void>}
+ */
 async function _getAccountInfo(_index) {
-
     const accInfo = allAccounts[_index];
     
     accInfo.nonce = await provider.getTransactionCount(accInfo.address);
     accInfo.balance = await provider.getBalance(accInfo.address);
 
     console.log(accInfo);
-
 }
 
+/**
+ * Delete a single account by index (internal implementation)
+ * @private
+ * @param {number|null} _index - Account index or null to clear all
+ * @returns {void}
+ */
 function _deleteBySingIndex(_index) {
     if (_index === null || _index === undefined) {
         // Clear all arrays
@@ -114,5 +150,3 @@ function _deleteBySingIndex(_index) {
         }
     }
 }
-
-// }

@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Solidity compiler builder utilities
+ * @description Handles Solidity compiler version loading, contract compilation,
+ * and artifact generation including ABIs, bytecode, and metadata.
+ * @module builder
+ */
+
 import path from 'path';
 import fs from 'fs';
 import solc from 'solc';
@@ -5,8 +12,20 @@ import { check, findImports } from './dir.js';
 import { getCompilerOptions } from '../services/build.js';
 import { LocalStorage } from 'node-localstorage';
 
+/**
+ * Local storage instance for persisting compiler artifacts paths
+ * @type {LocalStorage}
+ */
 const localStorage = new LocalStorage('./localStorage');
 
+/**
+ * Load a specific version of the Solidity compiler
+ * @param {string} version - Solidity compiler version identifier
+ * @returns {Promise<Object>} Promise resolving to solc instance
+ * @throws {Error} If version loading fails
+ * @example
+ * loadSolcVersion('v0.8.20+commit.a1b79de6');
+ */
 export function loadSolcVersion(version){
   return new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcInstance) => {
@@ -16,6 +35,16 @@ export function loadSolcVersion(version){
   });
 }
 
+/**
+ * Set and load a specific Solidity compiler version
+ * @async
+ * @param {string} version - Solidity compiler version identifier
+ * @param {Object} solcInstance - Current solc instance
+ * @returns {Promise<Object>} New solc instance with the specified version
+ * @throws {Error} If version loading fails
+ * @example
+ * setVersion('v0.8.20+commit.a1b79de6', solcInstance);
+ */
 export async function setVersion(version, solcInstance){
   solcInstance = await new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcSpecificVersion) => {
@@ -28,6 +57,21 @@ export async function setVersion(version, solcInstance){
   return solcInstance;
 }
 
+/**
+ * Build (compile) a Solidity contract and save artifacts
+ * @param {string} fullPath - Full path to the .sol file
+ * @param {Array<string>} [selectedContracts=[]] - Array of contract names to compile from the file
+ * @param {string} buildPath - Output directory for compilation artifacts
+ * @returns {void}
+ * @throws {Error} If compilation fails or produces errors
+ * @description Compiles Solidity contracts and saves artifacts in organized subdirectories:
+ * - artifacts/: Complete contract data
+ * - abis/: Contract ABIs
+ * - bytecode/: Contract bytecode
+ * - metadata/: Contract metadata
+ * @example
+ * build('./contracts/MyToken.sol', ['MyToken'], './build');
+ */
 export function build(fullPath, selectedContracts, buildPath){
   if(!selectedContracts){
     selectedContracts = [];

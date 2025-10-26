@@ -1,3 +1,11 @@
+/**
+ * @fileoverview Smart contract deployment and management
+ * @description Provides functions to deploy new smart contracts and add existing
+ * contracts to the EtherShell environment. Manages contract instances and integrates
+ * them with the REPL context.
+ * @module addContracts
+ */
+
 import { ethers } from 'ethers';
 import fs from 'fs';
 import { provider } from './network.js';
@@ -5,14 +13,34 @@ import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 
+/**
+ * Local storage instance for persisting contract metadata
+ * @type {LocalStorage}
+ */
 const localStorage = new LocalStorage('./localStorage');
 
+/**
+ * Map of all deployed and added contracts
+ * @type {Map<string, ethers.Contract>}
+ */
 export const contracts = new Map();
 
+/**
+ * Deploy a new smart contract to the blockchain
+ * @async
+ * @param {string} contractName - Name of the contract to deploy
+ * @param {Array} [args=[]] - Constructor arguments for the contract
+ * @param {number} [accIndex=0] - Index of the account to deploy from
+ * @param {string} [chain] - Optional custom chain URL
+ * @param {string} [abiLoc] - Optional custom ABI file location
+ * @param {string} [bytecodeLoc] - Optional custom bytecode file location
+ * @returns {Promise<void>}
+ * @throws {Error} If contract name is empty, account index is out of range, or deployment fails
+ * @example
+ * deploy('MyToken', [1000000], 0);
+ */
 export async function deploy(contractName, args, accIndex, chain, abiLoc, bytecodeLoc) {
-
     try {
-
         let currentProvider;
         let connectedChain;
 
@@ -88,17 +116,26 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         tx.deployType = deployTx.deployType;
         
         console.log(tx);
-
     } catch(err) {
         console.error(err);
     }
-
 }
 
+/**
+ * Add an existing deployed contract to EtherShell
+ * @async
+ * @param {string} contractName - Name to assign to the contract
+ * @param {string} contractAddr - Address of the deployed contract
+ * @param {number} [accIndex=0] - Index of the account to interact with the contract
+ * @param {string} abiLoc - Path to the contract ABI file
+ * @param {string} [chain] - Optional custom chain URL
+ * @returns {Promise<void>}
+ * @throws {Error} If contract address or ABI location is null/undefined
+ * @example
+ * add('USDT', '0xdac17f958d2ee523a2206206994597c13d831ec7', 0, './abis/USDT.json');
+ */
 export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
-
     try {
-
         let currentProvider;
         let connectedChain;
 
@@ -153,9 +190,7 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         }
 
         console.log(result);
-
     } catch(err) {
         console.error(err);
     }
-
 }

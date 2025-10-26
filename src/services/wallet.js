@@ -1,13 +1,42 @@
+/**
+ * @fileoverview Ethereum wallet management utilities
+ * @description Manages Ethereum wallets including creation, import, and deletion
+ * of both regular wallets and HD (Hierarchical Deterministic) wallets. Supports
+ * importing private keys, generating new wallets, and connecting to node-managed accounts.
+ * @module wallet
+ */
+
 import { ethers } from 'ethers';
 import { provider } from './network.js';
 import { deleteByIndex, deleteByIndexArr, getAccountInfo } from '../utils/accounter.js';
 
+/**
+ * Array containing all accounts (imported, generated, HD, and node-managed)
+ * @type {Array<Object>}
+ */
 export let allAccounts = [];
+
+/**
+ * Array containing only regular accounts (imported and generated)
+ * @type {Array<Object>}
+ */
 export let accounts = [];
+
+/**
+ * Array containing only HD (Hierarchical Deterministic) accounts
+ * @type {Array<Object>}
+ */
 export let hdAccounts = [];
 
+/**
+ * Add accounts from private key(s)
+ * @param {string|Array<string>} privKeyArr - Single private key or array of private keys
+ * @throws {Error} If no private key is provided
+ * @example
+ * addAccounts('0x1234...');
+ * addAccounts(['0x1234...', '0x5678...']);
+ */
 export function addAccounts(privKeyArr) {
-
     if(!privKeyArr){
         throw `You need to add at least one private key. If you have no private key you can create new accounts by 'newAccounts()'! `;
     }
@@ -56,11 +85,16 @@ export function addAccounts(privKeyArr) {
 
         console.log(allAccounts.slice(newFrom));
     }
-
 }
 
+/**
+ * Add HD wallets from a mnemonic phrase
+ * @param {string} phrase - BIP39 mnemonic phrase
+ * @param {number} [count=10] - Number of accounts to derive from the mnemonic
+ * @example
+ * addHD('witch collapse practice feed shame open despair creek road again ice least', 5);
+ */
 export function addHD(phrase, count = 10) {
-
     const newFrom = allAccounts.length;
     const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
     
@@ -90,11 +124,15 @@ export function addHD(phrase, count = 10) {
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
-
 }
 
+/**
+ * Create new random accounts
+ * @param {number} [count=1] - Number of accounts to create
+ * @example
+ * createAccounts(3);
+ */
 export function createAccounts(count = 1) {
-
     const newAccounts = Array.from({length: count}, () => ethers.Wallet.createRandom());
     const newFrom = accounts.length;
 
@@ -119,11 +157,15 @@ export function createAccounts(count = 1) {
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
-
 }
 
+/**
+ * Create new HD wallet with random mnemonic
+ * @param {number} [count=10] - Number of accounts to derive
+ * @example
+ * createHD(5);
+ */
 export function createHD(count = 10) {
-
     const hdNode = ethers.HDNodeWallet.createRandom();
     const newFrom = allAccounts.length;
     
@@ -153,55 +195,66 @@ export function createHD(count = 10) {
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
-
 }
 
+/**
+ * Get all accounts (imported, generated, HD, and node-managed)
+ * @example
+ * getAllAccounts();
+ */
 export function getAllAccounts() {
-    
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts);
-
 }
 
+/**
+ * Get regular accounts (imported and generated only)
+ * @example
+ * getAccounts();
+ */
 export function getAccounts() {
-    
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(accounts);
-
 }
 
+/**
+ * Get HD accounts only
+ * @example
+ * getHDAccounts();
+ */
 export function getHDAccounts() {
-
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(hdAccounts);
-
 }
 
+/**
+ * Delete account(s) by various identifiers
+ * @param {number|string|Array<number>|null} accPointer - Account index, address, mnemonic phrase, or array of indices
+ * @example
+ * deleteAccount(0); // Delete by index
+ * deleteAccount('0x1234...'); // Delete by address
+ * deleteAccount([0, 2, 5]); // Delete multiple by indices
+ * deleteAccount('witch collapse...'); // Delete all accounts from mnemonic
+ * deleteAccount(); // Delete all accounts
+ */
 export function deleteAccount(accPointer) {
-
     if(!accPointer) {
-
         deleteByIndex(null);
         console.log(allAccounts);
-
     }
 
     if(typeof accPointer === 'number') {
-
         deleteByIndex(accPointer);
         console.log(allAccounts);
-
     }
 
     if(ethers.isAddress(accPointer)) {
-
         const index = allAccounts.findIndex(wallet => wallet.address === accPointer);
 
         if(index !== -1) {
             deleteByIndex(index);
         }
         console.log(allAccounts);
-
     }
 
     if(Array.isArray(accPointer)) {
@@ -227,14 +280,18 @@ export function deleteAccount(accPointer) {
             deleteByIndex(indicesToDelete[i]);
         }
 
-        // deleteByIndexArr(indicesToDelete);
-
         console.log(allAccounts);
         return;
     }
-
 }
 
+/**
+ * Connect to node-managed wallets (e.g., from Hardhat node)
+ * @async
+ * @returns {Promise<void>}
+ * @example
+ * await connectWallet();
+ */
 export async function connectWallet() {
     try {
         const addressArr = await provider.listAccounts();
@@ -256,39 +313,39 @@ export async function connectWallet() {
     } catch(err) {
         console.error(err);
     }
-
 }
 
+/**
+ * Get detailed wallet information including balance and nonce
+ * @async
+ * @param {number|string|Array} accPointer - Account index, address, or array of indices
+ * @throws {Error} If input is empty or invalid
+ * @example
+ * await getWalletInfo(0); // Get info by index
+ * await getWalletInfo('0x1234...'); // Get info by address
+ * await getWalletInfo([0, 1, 2]); // Get info for multiple accounts
+ */
 export function getWalletInfo(accPointer) {
-
     try {
-
         if(!accPointer && accPointer != 0) {
             throw new Error('Error: Empty input is NOT valid!');
         }
 
         if(typeof accPointer === 'number') {
-
             const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
             getAccountInfo(index);
-
         }
 
         if(ethers.isAddress(accPointer)) {
-
             const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
             getAccountInfo(index);
-
         }
 
         if(Array.isArray(accPointer)) {
-
             getAccountInfo(accPointer);
-
         }
-        
+    
     } catch(err) {
         console.error(err);
     }
-
 }

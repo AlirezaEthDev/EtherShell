@@ -1,12 +1,34 @@
+/**
+ * @fileoverview Directory and file utilities for Solidity projects
+ * @description Provides utilities for directory management, collecting Solidity files,
+ * and resolving contract imports during compilation.
+ * @module dir
+ */
+
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * Check if directory exists and create it if it doesn't
+ * @param {string} dir - Directory path to check/create
+ * @returns {void}
+ * @example
+ * check('./build/artifacts');
+ */
 export function check(dir){
     if(!fs.existsSync(dir)){
       fs.mkdirSync(dir, {recursive: true});
     }
 }
 
+/**
+ * Recursively collect all Solidity files from a directory
+ * @param {string} dirPath - Root directory to search for .sol files
+ * @returns {Array<string>} Array of absolute paths to .sol files
+ * @example
+ * const solFiles = collectSolFiles('./contracts');
+ * // Returns: ['./contracts/Token.sol', './contracts/utils/SafeMath.sol']
+ */
 export function collectSolFiles(dirPath) {
   let solFiles = [];
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
@@ -24,6 +46,15 @@ export function collectSolFiles(dirPath) {
   return solFiles;
 }
 
+/**
+ * Resolve Solidity import paths for the compiler
+ * @param {string} importPath - Import path from Solidity import statement
+ * @param {string} basePath - Base directory of the importing file
+ * @returns {Object} Object with 'contents' property containing file content or 'error' property
+ * @example
+ * const result = findImports('./Token.sol', './contracts');
+ * // Returns: { contents: "pragma solidity ^0.8.0;..." } or { error: "File not found" }
+ */
 export function findImports(importPath, basePath) {
   try {
     // Resolve relative to the current file's directory

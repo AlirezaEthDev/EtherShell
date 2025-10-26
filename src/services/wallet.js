@@ -73,7 +73,7 @@ export function addAccounts(privKeyArr) {
                 index: allAccounts.length,
                 address: newAccount.address,
                 privateKey: privKey,
-               contracts: []
+                contracts: []
             });
             accounts.push({
                 index: allAccounts.length - 1,
@@ -154,7 +154,6 @@ export function createAccounts(count = 1) {
         })
 
     }
-
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }
@@ -177,6 +176,8 @@ export function createHD(count = 10) {
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
             type: 'user-generated',
+            nonce: 0,
+            balance: 0,
             path: hdWallet.path,
             depth: hdWallet.depth,
             contracts: []
@@ -187,6 +188,8 @@ export function createHD(count = 10) {
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
             type: 'user-generated',
+            nonce: 0,
+            balance: 0,
             path: hdWallet.path,
             depth: hdWallet.depth,
             contracts: []
@@ -325,7 +328,7 @@ export async function connectWallet() {
  * await getWalletInfo('0x1234...'); // Get info by address
  * await getWalletInfo([0, 1, 2]); // Get info for multiple accounts
  */
-export function getWalletInfo(accPointer) {
+export async function getWalletInfo(accPointer) {
     try {
         if(!accPointer && accPointer != 0) {
             throw new Error('Error: Empty input is NOT valid!');
@@ -333,16 +336,16 @@ export function getWalletInfo(accPointer) {
 
         if(typeof accPointer === 'number') {
             const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
-            getAccountInfo(index);
+            await getAccountInfo(index);
         }
 
         if(ethers.isAddress(accPointer)) {
             const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
-            getAccountInfo(index);
+            await getAccountInfo(index);
         }
 
         if(Array.isArray(accPointer)) {
-            getAccountInfo(accPointer);
+            await getAccountInfo(accPointer);
         }
     
     } catch(err) {

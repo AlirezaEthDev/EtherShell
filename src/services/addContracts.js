@@ -78,16 +78,22 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         await deployTx.waitForDeployment();
 
         // Update deployer contract list
-        allAccounts[accIndex].contracts.push(deployTx.target);
+        const contSpec = {
+            address: deployTx.target,
+            deployedOn: connectedChain.name,
+            chainId: connectedChain.chainId
+        }
+
+        allAccounts[accIndex].contracts.push(contSpec);
         
         const accountsIndex = accounts.findIndex(wallet => wallet.index == accIndex);
         if(accountsIndex >= 0) {
-            accounts[accountsIndex].contracts.push(deployTx.target);
+            accounts[accountsIndex].contracts.push(contSpec);
         }
 
         const hdIndex = hdAccounts.findIndex(wallet => wallet.index == accIndex);
         if(hdIndex >= 0) {
-            hdAccounts[hdIndex].contracts.push(deployTx.target);
+            hdAccounts[hdIndex].contracts.push(contSpec);
         }
 
         // Extend contract object
@@ -163,6 +169,25 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         const abi  = JSON.parse(fs.readFileSync(abiLoc, 'utf8'));
 
         const newContract = new ethers.Contract(contractAddr, abi, wallet);
+
+        // Update deployer contract list
+        const contSpec = {
+            address: newContract.target,
+            deployedOn: connectedChain.name,
+            chainId: connectedChain.chainId
+        }
+
+        allAccounts[accIndex].contracts.push(contSpec);
+        
+        const accountsIndex = accounts.findIndex(wallet => wallet.index == accIndex);
+        if(accountsIndex >= 0) {
+            accounts[accountsIndex].contracts.push(contSpec);
+        }
+
+        const hdIndex = hdAccounts.findIndex(wallet => wallet.index == accIndex);
+        if(hdIndex >= 0) {
+            hdAccounts[hdIndex].contracts.push(contSpec);
+        }
 
         // Extend contract object
         newContract.index = Array.from(contracts.values()).length;

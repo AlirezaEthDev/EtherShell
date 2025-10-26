@@ -7,33 +7,43 @@ export let provider
 provider = new ethers.JsonRpcProvider(defaultUrl);
 currentUrl = defaultUrl;
 
-export function set(url){
-    provider = new ethers.JsonRpcProvider(url);
-    provider.getNetwork().then((result) => {
+export async function set(url){
+    try{
+        provider = new ethers.JsonRpcProvider(url);
         currentUrl = url;
+        const result = await provider.getNetwork();
         const network = {
             URL: currentUrl,
             name: result.name,
             chainId: result.chainId
-        }
+        }    
         console.log(network);
-    }).catch(console.error);
+    }catch(err){
+        console.error(err);
+    }
 }
 
-export function get(){
-    provider.getNetwork().then((result) => {
+export async function get(){
+    try{
+        const result = await provider.getNetwork();
         const network = {
             URL: currentUrl,
             name: result.name,
             chainId: result.chainId
-        }
+        }    
         console.log(network);
-    }).catch(console.error);
+    }catch(err){
+        console.error(err);
+    }
 }
 
 export function getDefault(){
-    const result = {
-        URL: defaultUrl
+    try{
+        const result = {
+            URL: defaultUrl
+        }
+        console.log(result);
+    }catch(err){
+        console.error(err);
     }
-    console.log(result);
 }

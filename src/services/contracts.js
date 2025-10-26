@@ -1,9 +1,7 @@
 import { ethers } from 'ethers';
-import { contracts } from './addContracts.js';
 import { getContArr } from '../utils/contractLister.js';
 
 export async function getContracts(contPointer) {
-
     const contArray = await getContArr();
     let result;
 
@@ -22,6 +20,4 @@ export async function getContracts(contPointer) {
     }
 
     console.log(result);
-
-
 }

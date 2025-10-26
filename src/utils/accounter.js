@@ -30,21 +30,21 @@ export function deleteByIndexArr(indices) {
     }
 }
 
-export function getAccountInfo(index) {
+export async function getAccountInfo(index) {
 
     if (Array.isArray(index)) {
 
-        _getAccArrInfo(index);
+        await _getAccArrInfo(index);
 
     } else if (typeof index === 'number') {
 
-        _getAccountInfo(index);
+        await _getAccountInfo(index);
 
     }
 
 }
 
-function _getAccArrInfo(_indices) {
+async function _getAccArrInfo(_indices) {
 
     if (!_indices || !_indices.length) {
         console.error('Error: Empty input is NOT valid!');
@@ -56,27 +56,19 @@ function _getAccArrInfo(_indices) {
     
     // Delete each index from highest to lowest
     for (const index of sortedIndices) {
-        _getAccountInfo(index);
+        await _getAccountInfo(index);
     }
 
 }
 
-function _getAccountInfo(_index) {
+async function _getAccountInfo(_index) {
 
     const accInfo = allAccounts[_index];
     
-    provider.getTransactionCount(accInfo.address).then((count) => {
+    accInfo.nonce = await provider.getTransactionCount(accInfo.address);
+    accInfo.balance = await provider.getBalance(accInfo.address);
 
-        accInfo.nonce = count;
-        provider.getBalance(accInfo.address).then((balance) => {
-
-            accInfo.balance = balance;
-            accInfo.contracts = [];
-            console.log(accInfo);
-
-        })
-
-    })
+    console.log(accInfo);
 
 }
 

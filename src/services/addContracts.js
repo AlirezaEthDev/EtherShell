@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import fs from 'fs';
 import { provider } from './network.js';
-import { allAccounts } from './wallet.js';
+import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 
@@ -49,6 +49,19 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const deployTx = await factory.deploy(...contractArgs);
         await deployTx.waitForDeployment();
 
+        // Update deployer contract list
+        allAccounts[accIndex].contracts.push(deployTx.target);
+        
+        const accountsIndex = accounts.findIndex(wallet => wallet.index == accIndex);
+        if(accountsIndex >= 0) {
+            accounts[accountsIndex].contracts.push(deployTx.target);
+        }
+
+        const hdIndex = hdAccounts.findIndex(wallet => wallet.index == accIndex);
+        if(hdIndex >= 0) {
+            hdAccounts[hdIndex].contracts.push(deployTx.target);
+        }
+
         // Extend contract object
         deployTx.index = Array.from(contracts.values()).length;
         deployTx.name = contractName;
@@ -66,6 +79,14 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const deployHash = deployTx.deploymentTransaction().hash;
         const tx = await provider.getTransaction(deployHash);
         delete tx.data;
+
+        // Extend transaction object
+        tx.ethershellIndex = deployTx.index;
+        tx.address = deployTx.target;
+        tx.name = deployTx.name;
+        tx.chain = deployTx.chain;
+        tx.deployType = deployTx.deployType;
+        
         console.log(tx);
 
     } catch(err) {

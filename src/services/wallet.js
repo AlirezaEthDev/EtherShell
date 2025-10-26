@@ -24,13 +24,15 @@ export function addAccounts(privKeyArr) {
             index: allAccounts.length,
             address: newAccount.address,
             privateKey: privKeyArr,
-            type: 'user-imported'
+            type: 'user-imported',
+            contracts: []
         });
         accounts.push({
             index: allAccounts.length - 1,
             address: newAccount.address,
             privateKey: privKeyArr,
-            type: 'user-imported'
+            type: 'user-imported',
+            contracts: []
         });
         console.log(allAccounts[newFrom]);
     }
@@ -41,12 +43,14 @@ export function addAccounts(privKeyArr) {
             allAccounts.push({
                 index: allAccounts.length,
                 address: newAccount.address,
-                privateKey: privKey
+                privateKey: privKey,
+               contracts: []
             });
             accounts.push({
                 index: allAccounts.length - 1,
                 address: newAccount.address,
-                privateKey: privKey
+                privateKey: privKey,
+                contracts: []
             });
         });
 
@@ -69,7 +73,8 @@ export function addHD(phrase, count = 10) {
             privateKey: hdWallet.privateKey,
             type: 'user-imported',
             path: hdWallet.path,
-            depth: hdWallet.depth
+            depth: hdWallet.depth,
+            contracts: []
         });
         hdAccounts.push({
             index: allAccounts.length - 1,
@@ -78,7 +83,8 @@ export function addHD(phrase, count = 10) {
             privateKey: hdWallet.privateKey,
             type: 'user-imported',
             path: hdWallet.path,
-            depth: hdWallet.depth
+            depth: hdWallet.depth,
+            contracts: []
         });
     }
 
@@ -98,13 +104,15 @@ export function createAccounts(count = 1) {
             index: allAccounts.length,
             address:  newAccounts[i].address,
             privateKey: newAccounts[i].privateKey,
-            type: 'user-generated'
+            type: 'user-generated',
+            contracts: []
         });
         accounts.push({
             index: allAccounts.length - 1,
             address: newAccounts[i].address,
             privateKey: newAccounts[i].privateKey,
-            type: 'user-generated'
+            type: 'user-generated',
+            contracts: []
         })
 
     }
@@ -128,7 +136,8 @@ export function createHD(count = 10) {
             privateKey: hdWallet.privateKey,
             type: 'user-generated',
             path: hdWallet.path,
-            depth: hdWallet.depth
+            depth: hdWallet.depth,
+            contracts: []
         });
         hdAccounts.push({
             index: allAccounts.length - 1,
@@ -137,7 +146,8 @@ export function createHD(count = 10) {
             privateKey: hdWallet.privateKey,
             type: 'user-generated',
             path: hdWallet.path,
-            depth: hdWallet.depth
+            depth: hdWallet.depth,
+            contracts: []
         });
     }
 

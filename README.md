@@ -29,12 +29,8 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/ethershell.git
-cd ethershell
-
-# Install dependencies
-npm install
+# Install globally
+npm i ethershell -g
 
 # Start EtherShell
 npm start

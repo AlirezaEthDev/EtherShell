@@ -39,13 +39,16 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
       
-      - name: Publish to npm
-        run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
-      
-      # NEW STEP: Update latest tag for alpha releases
-      - name: Set as latest (for npm page display)
-        if: contains(github.event.release.tag_name, 'alpha')
+      - name: Publish to npm and update tags
         run: |
+          # Publish with provenance
+          npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
+          
+          # Get version from package.json
           VERSION=$(node -p "require('./package.json').version")
-          npm dist-tag add ethershell@$VERSION latest
-          echo "✅ Set ethershell@$VERSION as latest"
+          
+          # Update dist-tags (only for alpha/beta)
+          if [[ "${{ steps.npm-tag.outputs.tag }}" == "alpha" ]]; then
+            npm dist-tag add ethershell@$VERSION latest
+            echo "✅ Set ethershell@$VERSION as latest"
+          fi

@@ -1,6 +1,6 @@
 {
   "name": "ethershell",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "Interactive JavaScript console for Ethereum smart contract management",
   "type": "module",
   "bin": {

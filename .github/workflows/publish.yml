@@ -10,10 +10,10 @@ jobs:
     
     permissions:
       contents: read
-      id-token: write  # CRITICAL: Required for OIDC trusted publishing
+      id-token: write
     
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
       
       - name: Setup Node.js
@@ -22,14 +22,12 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
       
-      # Ensure npm 11.5.1 or later (required for trusted publishing)
-      - name: Update npm
+      - name: Upgrade npm
         run: npm install -g npm@latest
       
       - name: Install dependencies
         run: npm ci
       
-      # Determine npm tag (alpha, beta, or latest)
       - name: Determine npm tag
         id: npm-tag
         run: |
@@ -41,6 +39,13 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
       
-      # Publish using OIDC - NO TOKEN NEEDED!
       - name: Publish to npm
         run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
+      
+      # NEW STEP: Update latest tag for alpha releases
+      - name: Set as latest (for npm page display)
+        if: contains(github.event.release.tag_name, 'alpha')
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          npm dist-tag add ethershell@$VERSION latest
+          echo "✅ Set ethershell@$VERSION as latest"

@@ -40,7 +40,7 @@ npm start
 
 ```bash
 # Start the console
-npm run start
+npm start
 
 # You should see:
 # EtherShell>

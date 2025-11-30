@@ -1,9 +1,8 @@
 name: Publish to npm
 
 on:
-  push:
-    tags:
-      - 'v*'  # Triggers on tags like v0.1.0, v1.0.0, etc.
+  release:
+    types: [created]
 
 jobs:
   publish:
@@ -11,7 +10,7 @@ jobs:
     
     permissions:
       contents: read
-      id-token: write  # Required for trusted publishing
+      id-token: write  # CRITICAL: Required for OIDC trusted publishing
     
     steps:
       - name: Checkout code
@@ -20,24 +19,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+      
+      # Ensure npm 11.5.1 or later (required for trusted publishing)
+      - name: Update npm
+        run: npm install -g npm@latest
       
       - name: Install dependencies
         run: npm ci
       
+      # Determine npm tag (alpha, beta, or latest)
       - name: Determine npm tag
         id: npm-tag
         run: |
-          if [[ "${{ github.ref_name }}" == *"alpha"* ]]; then
+          if [[ "${{ github.event.release.tag_name }}" == *"alpha"* ]]; then
             echo "tag=alpha" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref_name }}" == *"beta"* ]]; then
+          elif [[ "${{ github.event.release.tag_name }}" == *"beta"* ]]; then
             echo "tag=beta" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
       
+      # Publish using OIDC - NO TOKEN NEEDED!
       - name: Publish to npm
         run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

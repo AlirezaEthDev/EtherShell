@@ -60,7 +60,7 @@ EtherShell> chain()
 { URL: 'http://127.0.0.1:8545', name: 'unknown', chainId: 1337n }
 
 // Switch to a different network
-EtherShell> switch('https://sepolia.infura.io/v3/YOUR-PROJECT-ID')
+EtherShell> chain('https://sepolia.infura.io/v3/YOUR-PROJECT-ID')
 { URL: 'https://sepolia.infura.io/v3/...', name: 'sepolia', chainId: 11155111n }
 
 // Get default network info
@@ -354,7 +354,7 @@ Here's a full workflow example:
 
 ```javascript
 // 1. Connect to network
-EtherShell> switch('http://127.0.0.1:8545')
+EtherShell> chain('http://127.0.0.1:8545')
 
 // 2. Create wallets
 EtherShell> newWallet(2)
@@ -392,7 +392,7 @@ EtherShell> contracts()
 ### Network Commands
 | Command | Description |
 |---------|-------------|
-| `switch(url)` | Connect to blockchain network |
+| `chain(url)` | Connect to blockchain network |
 | `chain()` | Get current network info |
 | `defaultChain()` | Get default network URL |
 

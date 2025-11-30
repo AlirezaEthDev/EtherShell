@@ -6,6 +6,13 @@
  */
 
 import { ethers } from 'ethers';
+import { LocalStorage } from 'node-localstorage';
+
+/**
+ * Local storage instance for persisting compiler artifacts paths
+ * @type {LocalStorage}
+ */
+const localStorage = new LocalStorage('./localStorage');
 
 /**
  * Default JSON-RPC URL for local Ethereum node
@@ -26,8 +33,15 @@ export let currentUrl;
 export let provider 
 
 // Initialize provider with default URL
-provider = new ethers.JsonRpcProvider(defaultUrl);
-currentUrl = defaultUrl;
+const storedUrl = localStorage.getItem('url');
+if(storedUrl) {
+    provider = new ethers.JsonRpcProvider(storedUrl);;
+    currentUrl = storedUrl
+} else {
+    provider = new ethers.JsonRpcProvider(defaultUrl);
+    currentUrl = defaultUrl;
+}
+
 
 /**
  * Set a new network provider
@@ -48,6 +62,7 @@ export async function set(url){
             name: result.name,
             chainId: result.chainId
         }    
+        localStorage.setItem('url', url);
         console.log(network);
     }catch(err){
         console.error(err);

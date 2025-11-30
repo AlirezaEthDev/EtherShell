@@ -8,7 +8,13 @@
 
 import { ethers } from 'ethers';
 import { provider } from './network.js';
-import { deleteByIndex, deleteByIndexArr, getAccountInfo } from '../utils/accounter.js';
+import { 
+    deleteByIndex, 
+    deleteByIndexArr, 
+    getAccountInfo, 
+    detectDupWallet, 
+    detectDupHDWallet
+ } from '../utils/accounter.js';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)
@@ -43,6 +49,12 @@ export function addAccounts(privKeyArr) {
 
     if(!privKeyArr.length){
         throw `You need to add at least one private key. If you have no private key you can create new accounts by 'newAccounts()'! `;
+    }
+
+    const dupWallet = detectDupWallet(privKeyArr);
+
+    if(dupWallet.status) {
+        throw `Wallets may NOT be duplicated! You are adding wallet index ${dupWallet.index} again!`
     }
 
     const newFrom = allAccounts.length;
@@ -97,29 +109,39 @@ export function addAccounts(privKeyArr) {
 export function addHD(phrase, count = 10) {
     const newFrom = allAccounts.length;
     const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
+
+    const existingPhrase = allAccounts.find(wallet => wallet.phrase == phrase);
+    if(existingPhrase) {
+        throw `Error: HD wallet with this mnemonic phrase already exists at index ${existingPhrase.index}!`
+    }
     
     for (let i = 0; i < count; i++) {
         const hdWallet = hdNode.derivePath(i.toString());
-        allAccounts.push({
-            index: allAccounts.length,
-            address: hdWallet.address,
-            phrase: hdWallet.mnemonic.phrase,
-            privateKey: hdWallet.privateKey,
-            type: 'user-imported',
-            path: hdWallet.path,
-            depth: hdWallet.depth,
-            contracts: []
-        });
-        hdAccounts.push({
-            index: allAccounts.length - 1,
-            address: hdWallet.address,
-            phrase: hdWallet.mnemonic.phrase,
-            privateKey: hdWallet.privateKey,
-            type: 'user-imported',
-            path: hdWallet.path,
-            depth: hdWallet.depth,
-            contracts: []
-        });
+        const dupHDWallet = detectDupWallet(hdWallet.privateKey);
+        if(dupHDWallet.status) {
+            throw `Error: Wallets may NOT be duplicated! You are adding wallet index ${dupHDWallet.index} again!`
+        } else {
+            allAccounts.push({
+                index: allAccounts.length,
+                address: hdWallet.address,
+                phrase: hdWallet.mnemonic.phrase,
+                privateKey: hdWallet.privateKey,
+                type: 'user-imported',
+                path: hdWallet.path,
+                depth: hdWallet.depth,
+                contracts: []
+            });
+            hdAccounts.push({
+                index: allAccounts.length - 1,
+                address: hdWallet.address,
+                phrase: hdWallet.mnemonic.phrase,
+                privateKey: hdWallet.privateKey,
+                type: 'user-imported',
+                path: hdWallet.path,
+                depth: hdWallet.depth,
+                contracts: []
+            });
+        }
     }
 
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);

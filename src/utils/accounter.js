@@ -64,6 +64,31 @@ export async function getAccountInfo(index) {
     }
 }
 
+export function detectDupWallet(privKeyArr) {
+    if(typeof privKeyArr === 'string') {
+        return _findDupWalletByKey(privKeyArr);
+    }
+
+    if(Array.isArray(privKeyArr)) {
+       return  _findDupWalletByArr(privKeyArr);
+    }
+}
+
+export function detectDupHDWallet(phrase) {
+    const foundWallet = allAccounts.find(wallet => wallet.phrase == phrase);
+    if(foundWallet) {
+        return {
+            status: true,
+            walletPhrase: phrase,
+            index: foundWallet.index
+        }
+    } else {
+        return {
+            status: false
+        }
+    }
+}
+
 /**
  * Get information for multiple accounts (internal)
  * @private
@@ -149,4 +174,35 @@ function _deleteBySingIndex(_index) {
             }
         }
     }
+}
+
+function _findDupWalletByKey(privKey) {
+    const foundWallet = allAccounts.find(wallet => wallet.privateKey == privKey);
+    if(foundWallet) {
+        return {
+            status: true,
+            privateKey: privKey,
+            index: foundWallet.index
+        }
+    } else {
+        return {
+            status: false
+        }
+    }
+}
+
+function _findDupWalletByArr(privKeyArr) {
+        for(let i = 0; i < privKeyArr.length; i++) {
+            const foundWallet = allAccounts.find(wallet => wallet.privateKey == privKeyArr[i]);
+            if(foundWallet) {
+                return {
+                    status: true,
+                    privateKey: privKeyArr[i],
+                    index: foundWallet.index
+                }
+            }
+        }
+        return {
+            status: false
+        }
 }

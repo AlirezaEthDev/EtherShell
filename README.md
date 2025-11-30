@@ -30,7 +30,7 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 
 ```bash
 # Install globally
-npm i ethershell -g
+npm i -g ethershell
 
 # Start EtherShell
 npm start

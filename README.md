@@ -60,7 +60,7 @@ EtherShell> chain()
 { URL: 'http://127.0.0.1:8545', name: 'unknown', chainId: 1337n }
 
 // Switch to a different network
-EtherShell> setChain('https://sepolia.infura.io/v3/YOUR-PROJECT-ID')
+EtherShell> switch('https://sepolia.infura.io/v3/YOUR-PROJECT-ID')
 { URL: 'https://sepolia.infura.io/v3/...', name: 'sepolia', chainId: 11155111n }
 
 // Get default network info
@@ -189,22 +189,22 @@ EtherShell> removeWallet()
 
 ```javascript
 // View current compiler version
-EtherShell> version()
+EtherShell> compiler()
 "0.8.20+commit.a1b79de6.Emscripten.clang"
 
 // Switch to a different Solidity version
-EtherShell> compiler('v0.8.19+commit.7dd6d404')
+EtherShell> compUpdate('v0.8.19+commit.7dd6d404')
 Loaded solc version: 0.8.19+commit.7dd6d404.Emscripten.clang
 
 // Configure compilation options
-EtherShell> compilerOpts(true, false, 1000)
+EtherShell> compOpts(true, false, 1000)
 ✓ Compiler options updated:
  Gas Optimizer: Enabled
  Optimizer Runs: 1000
  ViaIR: Disabled
 
 // Get current options
-EtherShell> options()
+EtherShell> compInfo()
 { optimizer: true, optimizerRuns: 1000, viaIR: false }
 ```
 
@@ -354,7 +354,7 @@ Here's a full workflow example:
 
 ```javascript
 // 1. Connect to network
-EtherShell> setChain('http://127.0.0.1:8545')
+EtherShell> switch('http://127.0.0.1:8545')
 
 // 2. Create wallets
 EtherShell> newWallet(2)
@@ -363,7 +363,7 @@ EtherShell> newWallet(2)
 EtherShell> wallets()
 
 // 4. Configure compiler
-EtherShell> compilerOpts(true, false, 1000)
+EtherShell> compOpts(true, false, 1000)
 
 // 5. Compile contracts
 EtherShell> build()
@@ -392,7 +392,7 @@ EtherShell> contracts()
 ### Network Commands
 | Command | Description |
 |---------|-------------|
-| `setChain(url)` | Connect to blockchain network |
+| `switch(url)` | Connect to blockchain network |
 | `chain()` | Get current network info |
 | `defaultChain()` | Get default network URL |
 
@@ -413,10 +413,10 @@ EtherShell> contracts()
 ### Compiler Commands
 | Command | Description |
 |---------|-------------|
-| `version()` | Get current Solidity version |
-| `compiler(version)` | Load specific Solidity version |
-| `compilerOpts(gasOpt, viaIR, runs)` | Configure optimization |
-| `options()` | Get current compiler options |
+| `compiler()` | Get current Solidity version |
+| `compUpdate(version)` | Load specific Solidity version |
+| `compOpts(gasOpt, viaIR, runs)` | Configure optimization |
+| `compInfo()` | Get current compiler options |
 | `build([path], [contracts], [output])` | Compile contracts |
 | `clean([path])` | Delete build directory |
 

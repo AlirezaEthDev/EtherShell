@@ -52,15 +52,15 @@ export const r = repl.start({
 });
 
 // Network commands
-r.context.setChain = set;
+r.context.chain = set;
 r.context.chain = get;
 r.context.defaultChain = getDefault;
 
 // Compile commands
-r.context.version = currentCompiler;
-r.context.compiler = updateCompiler;
-r.context.options = getCompilerOptions;
-r.context.compilerOpts = compilerOptions;
+r.context.compiler = currentCompiler;
+r.context.compUpdate = updateCompiler;
+r.context.compInfo = getCompilerOptions;
+r.context.compOpts = compilerOptions;
 r.context.build = compile;
 
 // Clean build folder

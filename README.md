@@ -1,5 +1,7 @@
 # 🔷 EtherShell - Interactive Ethereum Smart Contract Console
 
+**⚠️ WARNING: This package is in ALPHA testing. NOT production ready!**
+
 An interactive Node.js console for Ethereum smart contract development. Write, compile, deploy, and manage smart contracts directly from the shell with an intuitive, Solidity-focused developer experience.
 
 **Perfect for:**
@@ -618,7 +620,7 @@ Contributions are welcome! Please:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see LICENSE file for details.
+This project is licensed under the BUSL-1.1 License - see LICENSE file for details.
 
 ## 💬 Support & Community
 

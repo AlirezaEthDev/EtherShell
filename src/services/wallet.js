@@ -12,8 +12,7 @@ import {
     deleteByIndex, 
     deleteByIndexArr, 
     getAccountInfo, 
-    detectDupWallet, 
-    detectDupHDWallet
+    detectDupWallet
  } from '../utils/accounter.js';
 
 /**

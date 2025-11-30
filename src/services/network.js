@@ -33,6 +33,10 @@ export let currentUrl;
 export let provider 
 
 // Initialize provider with default URL
+/**
+ * The specific RPC endpoint URL saved on storage before.
+ * @type {string}
+ */
 const storedUrl = localStorage.getItem('url');
 if(storedUrl) {
     provider = new ethers.JsonRpcProvider(storedUrl);;

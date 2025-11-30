@@ -64,6 +64,14 @@ export async function getAccountInfo(index) {
     }
 }
 
+/**
+ * Checks if an imported wallet added before or not.
+ * @param {string|Array<string>} privKeyArr - Account private key or array of private keys
+ * @returns {Object}
+ * @example
+ * detectDupWallet('0x12cb...');
+ * detectDupWallet(['0x12cb...','0x34cd...', ...]);
+ */
 export function detectDupWallet(privKeyArr) {
     if(typeof privKeyArr === 'string') {
         return _findDupWalletByKey(privKeyArr);
@@ -71,21 +79,6 @@ export function detectDupWallet(privKeyArr) {
 
     if(Array.isArray(privKeyArr)) {
        return  _findDupWalletByArr(privKeyArr);
-    }
-}
-
-export function detectDupHDWallet(phrase) {
-    const foundWallet = allAccounts.find(wallet => wallet.phrase == phrase);
-    if(foundWallet) {
-        return {
-            status: true,
-            walletPhrase: phrase,
-            index: foundWallet.index
-        }
-    } else {
-        return {
-            status: false
-        }
     }
 }
 
@@ -176,6 +169,12 @@ function _deleteBySingIndex(_index) {
     }
 }
 
+/**
+ * Find a duplicated wallet using passed private key
+ * @private
+ * @param {string} privKey - Account private key
+ * @returns {Object}
+ */
 function _findDupWalletByKey(privKey) {
     const foundWallet = allAccounts.find(wallet => wallet.privateKey == privKey);
     if(foundWallet) {
@@ -191,6 +190,12 @@ function _findDupWalletByKey(privKey) {
     }
 }
 
+/**
+ * Find a duplicated wallet using passed private key array
+ * @private
+ * @param {Array<string>} privKeyArr - Account private key array
+ * @returns {Object}
+ */
 function _findDupWalletByArr(privKeyArr) {
         for(let i = 0; i < privKeyArr.length; i++) {
             const foundWallet = allAccounts.find(wallet => wallet.privateKey == privKeyArr[i]);

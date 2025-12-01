@@ -1,0 +1,36 @@
+name: Update npm Tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to set as latest (e.g., 0.1.0-alpha.9)'
+        required: true
+        type: string
+
+jobs:
+  update-tags:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+    
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+      
+      - name: Update dist-tags
+        run: |
+          echo "🏷️  Updating tags for ethershell@${{ inputs.version }}"
+          npm dist-tag add ethershell@${{ inputs.version }} latest
+          npm dist-tag add ethershell@${{ inputs.version }} alpha
+          echo "✅ Tags updated successfully!"
+          echo ""
+          echo "📋 Current tags:"
+          npm dist-tag ls ethershell

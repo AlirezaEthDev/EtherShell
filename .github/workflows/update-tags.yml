@@ -1,37 +1,50 @@
-name: Update npm Tags
+name: Publish to npm
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to set as latest (e.g., 0.1.0-alpha.10)'
-        required: true
-        type: string
+  release:
+    types: [created]
 
 jobs:
-  update-tags:
+  publish:
     runs-on: ubuntu-latest
     
     permissions:
       contents: read
-      id-token: write  # Required for OIDC
+      id-token: write
     
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'  # This was missing!
+          registry-url: 'https://registry.npmjs.org'
       
       - name: Upgrade npm
         run: npm install -g npm@latest
       
-      - name: Update dist-tags
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Determine npm tag
+        id: npm-tag
         run: |
-          echo "🏷️  Updating tags for ethershell@${{ inputs.version }}"
-          npm dist-tag add ethershell@${{ inputs.version }} latest
-          npm dist-tag add ethershell@${{ inputs.version }} alpha
-          echo "✅ Tags updated successfully!"
-          echo ""
-          echo "📋 Current tags:"
-          npm dist-tag ls ethershell
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          if [[ "$TAG_NAME" == *"alpha"* ]]; then
+            echo "tag=alpha" >> $GITHUB_OUTPUT
+          elif [[ "$TAG_NAME" == *"beta"* ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Publish to npm
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          NPM_TAG="${{ steps.npm-tag.outputs.tag }}"
+          
+          echo "📦 Publishing ethershell@$VERSION with tag: $NPM_TAG"
+          npm publish --provenance --access public --tag $NPM_TAG
+          echo "✅ Published successfully!"

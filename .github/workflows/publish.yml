@@ -44,6 +44,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           NPM_TAG="${{ steps.npm-tag.outputs.tag }}"
+          
           echo "📦 Publishing ethershell@$VERSION with tag: $NPM_TAG"
           npm publish --provenance --access public --tag $NPM_TAG
           echo "✅ Published successfully!"

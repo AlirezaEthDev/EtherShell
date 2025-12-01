@@ -2,6 +2,7 @@
   "name": "ethershell",
   "version": "0.1.0-alpha.6",
   "description": "Interactive JavaScript console for Ethereum smart contract management",
+  "license": "BUSL-1.1",
   "author": "Alireza Kiakojouri (alirezaethdev@gmail.com)",
   "repository": {
     "type": "git",

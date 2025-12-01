@@ -14,6 +14,14 @@ import {
     getAccountInfo, 
     detectDupWallet
  } from '../utils/accounter.js';
+ import fs from 'fs';
+
+
+/**
+ * Object containing all stored accounts (imported, generated, HD, and node-managed)
+ * @type {Object}
+ */
+let walletJSON;
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)

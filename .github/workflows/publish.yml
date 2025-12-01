@@ -33,9 +33,9 @@ jobs:
         run: |
           TAG_NAME="${{ github.event.release.tag_name }}"
           if [[ "$TAG_NAME" == *"alpha"* ]]; then
-            echo "tag=alpha" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
           elif [[ "$TAG_NAME" == *"beta"* ]]; then
-            echo "tag=beta" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi

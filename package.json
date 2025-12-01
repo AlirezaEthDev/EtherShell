@@ -1,6 +1,6 @@
 {
   "name": "ethershell",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.15",
   "description": "Interactive JavaScript console for Ethereum smart contract management",
   "author": "Alireza Kiakojouri (alirezaethdev@gmail.com)",
   "repository": {

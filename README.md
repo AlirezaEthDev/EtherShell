@@ -29,18 +29,22 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 ### Installation
 
 ```bash
-# Install globally
-npm i ethershell -g
+# Install globally:
+npm i -g ethershell
 
-# Start EtherShell
-npm start
+# Start EtherShell:
+ethershell 
+
+#or
+
+npx ethershell
 ```
 
 ### Basic Usage
 
 ```bash
 # Start the console
-npm start
+ethershell
 
 # You should see:
 # EtherShell>

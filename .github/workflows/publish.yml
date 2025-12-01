@@ -31,24 +31,19 @@ jobs:
       - name: Determine npm tag
         id: npm-tag
         run: |
-          if [[ "${{ github.event.release.tag_name }}" == *"alpha"* ]]; then
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          if [[ "$TAG_NAME" == *"alpha"* ]]; then
             echo "tag=alpha" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.release.tag_name }}" == *"beta"* ]]; then
+          elif [[ "$TAG_NAME" == *"beta"* ]]; then
             echo "tag=beta" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
       
-      - name: Publish to npm and update tags
+      - name: Publish to npm
         run: |
-          # Publish with provenance
-          npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
-          
-          # Get version from package.json
           VERSION=$(node -p "require('./package.json').version")
-          
-          # Update dist-tags (only for alpha/beta)
-          if [[ "${{ steps.npm-tag.outputs.tag }}" == "alpha" ]]; then
-            npm dist-tag add ethershell@$VERSION latest
-            echo "✅ Set ethershell@$VERSION as latest"
-          fi
+          NPM_TAG="${{ steps.npm-tag.outputs.tag }}"
+          echo "📦 Publishing ethershell@$VERSION with tag: $NPM_TAG"
+          npm publish --provenance --access public --tag $NPM_TAG
+          echo "✅ Published successfully!"

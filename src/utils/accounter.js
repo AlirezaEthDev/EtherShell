@@ -29,6 +29,8 @@ export function deleteByIndex(index) {
         deleteByIndexArr(index);
     } else if (typeof index === 'number') {
         _deleteBySingIndex(index);
+    } else if (index === null || index === undefined) {
+        _deleteAll();
     }
 }
 
@@ -113,6 +115,22 @@ export function getWalletJSON() {
     return JSON.parse(fs.readFileSync(walletJSONPath));
 }
 
+export function updateAccountMemory(allAccArr) {
+    let memAccArr = [];
+    let memHDAccArr = [];
+    for(let i = 0; i < allAccArr.length; i++) {
+        if(allAccArr[i].phrase) {
+            memHDAccArr.push(allAccArr[i])
+        } else {
+            memAccArr.push(allAccArr[i]);
+        }
+    }
+    return {
+        memAccArr,
+        memHDAccArr
+    }
+}
+
 /**
  * Get information for multiple accounts (internal)
  * @private
@@ -158,13 +176,6 @@ async function _getAccountInfo(_index) {
  * @returns {void}
  */
 function _deleteBySingIndex(_index) {
-    if (_index === null || _index === undefined) {
-        // Clear all arrays
-        allAccounts.splice(0);
-        accounts.splice(0);
-        hdAccounts.splice(0);
-        return;
-    }
 
     // Find and remove from allAccounts
     const accountIndex = allAccounts.findIndex(acc => acc.index === _index);
@@ -244,4 +255,17 @@ function _findDupWalletByArr(privKeyArr) {
         return {
             status: false
         }
+}
+
+/**
+ * Removes all accounts from storage and memory
+ * @private
+ * @returns {null}
+ */
+function _deleteAll() {
+    allAccounts.splice(0);
+    accounts.splice(0);
+    hdAccounts.splice(0);
+    fs.writeFileSync(walletJSONPath, JSON.stringify([], null, 2));
+    return;
 }

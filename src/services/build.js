@@ -9,12 +9,33 @@ import path from 'path';
 import solc from 'solc';
 import { check, collectSolFiles } from '../utils/dir.js';
 import { setVersion, build } from '../utils/builder.js';
+import fs from 'fs';
 
 /**
- * Current Solidity compiler instance
- * @type {Object}
+ * Stored compiler config path
+ * @type {string}
  */
-let currentSolcInstance = solc; // default local compiler
+let compConfigPath = './localStorage/compilerConfig.json';
+
+/**
+ * Global compiler configuration state
+ * @type {Object}
+ * @property {Object} currentSolcInstance - Current Solidity compiler instance
+ * @property {boolean} optimizer - Whether gas optimizer is enabled
+ * @property {number} optimizerRuns - Number of optimizer runs
+ * @property {boolean} viaIR - Whether to use IR-based code generation
+ */
+let compConfig = {};
+
+/**
+ * JSON file fields of compiler configuration
+ * @type {Object}
+ * @property {string} version - Current Solidity compiler version
+ * @property {boolean} optimizer - Whether gas optimizer is enabled
+ * @property {number} optimizerRuns - Number of optimizer runs
+ * @property {boolean} viaIR - Whether to use IR-based code generation
+ */
+let compConfigFile = {};
 
 /**
  * Global compiler configuration state
@@ -23,11 +44,37 @@ let currentSolcInstance = solc; // default local compiler
  * @property {number} optimizerRuns - Number of optimizer runs
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
-let compilerConfig = {
-  optimizer: false,
-  optimizerRuns: 200,
-  viaIR: false
-};
+let storedCompConfig;
+
+// Load config file
+if(fs.existsSync(compConfigPath)){
+  storedCompConfig = JSON.parse(fs.readFileSync(compConfigPath));
+} else {
+  storedCompConfig = null;
+}
+
+// Initialize global configuration of compiler
+if(storedCompConfig){
+  compConfigFile = storedCompConfig;
+  compConfig.currentSolcInstance = await setVersion(compConfigFile.version, compConfig.currentSolcInstance);
+  compConfig.optimizer = compConfigFile.optimizer;
+  compConfig.optimizerRuns = compConfigFile.optimizerRuns;
+  compConfig.viaIR = compConfigFile.viaIR;
+} else {
+  compConfig = {
+    currentSolcInstance: solc, // default local compiler
+    optimizer: false,
+    optimizerRuns: 200,
+    viaIR: false
+  }
+  compConfigFile.version = compConfig.currentSolcInstance.version();
+  compConfigFile.optimizer = compConfig.optimizer;
+  compConfigFile.optimizerRuns = compConfig.optimizerRuns;
+  compConfigFile.viaIR = compConfig.viaIR;
+
+  // Update config file
+  fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
+}
 
 /**
  * Update the Solidity compiler to a specific version
@@ -40,7 +87,12 @@ let compilerConfig = {
  */
 export async function updateCompiler(version){
   try{
-    currentSolcInstance = await setVersion(version, currentSolcInstance);
+    // Update global configuration
+    compConfig.currentSolcInstance = await setVersion(version, compConfig.currentSolcInstance);
+
+    // Update config file
+    compConfigFile.version = compConfig.currentSolcInstance.version();
+    fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
   } catch(err) {
     console.error(err);
   }
@@ -53,7 +105,7 @@ export async function updateCompiler(version){
  * const version = currentCompiler(); // Returns: "0.8.20+commit.a1b79de6.Emscripten.clang"
  */
 export function currentCompiler(){
-  return currentSolcInstance.version();
+  return compConfig.currentSolcInstance.version();
 }
 
 /**
@@ -80,19 +132,26 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
     }
 
     // Update global configuration
-    compilerConfig.optimizer = gasOptimizer;
-    compilerConfig.viaIR = viaIR;
-    compilerConfig.optimizerRuns = optimizerRuns;
+    compConfig.optimizer = gasOptimizer;
+    compConfig.viaIR = viaIR;
+    compConfig.optimizerRuns = optimizerRuns;
+
+    compConfigFile.optimizer = compConfig.optimizer;
+    compConfigFile.viaIR = compConfig.viaIR;
+    compConfigFile.optimizerRuns = compConfig.optimizerRuns;
+
+    // Update config file
+    fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
 
     // Provide user feedback
     console.log('✓ Compiler options updated:');
-    console.log(`  Gas Optimizer: ${compilerConfig.optimizer ? 'Enabled' : 'Disabled'}`);
-    if (compilerConfig.optimizer) {
-        console.log(`  Optimizer Runs: ${compilerConfig.optimizerRuns}`);
+    console.log(`  Gas Optimizer: ${compConfig.optimizer ? 'Enabled' : 'Disabled'}`);
+    if (compConfig.optimizer) {
+        console.log(`  Optimizer Runs: ${compConfig.optimizerRuns}`);
     }
-    console.log(`  ViaIR: ${compilerConfig.viaIR ? 'Enabled' : 'Disabled'}`);
+    console.log(`  ViaIR: ${compConfig.viaIR ? 'Enabled' : 'Disabled'}`);
     
-    return compilerConfig;
+    return compConfig;
   } catch (error) {
       console.error('Error setting compiler options:', error.message);
       return null;
@@ -106,7 +165,7 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
  * const opts = getCompilerOptions();
  */
 export function getCompilerOptions() {
-  return { ...compilerConfig };
+  return { ...compConfig };
 }
 
 /**

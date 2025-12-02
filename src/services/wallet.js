@@ -14,7 +14,8 @@ import {
     getAccountInfo, 
     detectDupWallet,
     updateWalletJSON,
-    getWalletJSON
+    getWalletJSON,
+    updateAccountMemory
  } from '../utils/accounter.js';
 
 /**
@@ -35,6 +36,11 @@ export let accounts = [];
  * @type {Array<Object>}
  */
 export let hdAccounts = [];
+
+// Update accounts & hdAccounts arrays
+const { memAccArr, memHDAccArr } = updateAccountMemory(allAccounts);
+accounts = memAccArr;
+hdAccounts = memHDAccArr;
 
 /**
  * Add accounts from private key(s)
@@ -316,6 +322,7 @@ export async function connectWallet() {
                 signer: accSigner // Store signer reference
             }) 
         }
+        updateWalletJSON(allAccounts);
     } catch(err) {
         console.error(err);
     }

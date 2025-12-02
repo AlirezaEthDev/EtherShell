@@ -58,7 +58,7 @@ First, connect to a blockchain network:
 
 ```javascript
 // View current network
-EtherShell> chain()
+EtherShell> chainInfo()
 { URL: 'http://127.0.0.1:8545', name: 'unknown', chainId: 1337n }
 
 // Switch to a different network

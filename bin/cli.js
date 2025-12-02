@@ -53,7 +53,7 @@ export const r = repl.start({
 
 // Network commands
 r.context.chain = set;
-r.context.chain = get;
+r.context.chainInfo = get;
 r.context.defaultChain = getDefault;
 
 // Compile commands

@@ -7,6 +7,13 @@
 
 import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
 import { provider } from '../services/network.js';
+import fs from 'fs';
+
+/**
+ * The path which in wallets json file will be saved.
+ * @type {String}
+ */
+const walletJSONPath = './localStorage/wallets.json';
 
 /**
  * Delete account(s) by index
@@ -83,6 +90,30 @@ export function detectDupWallet(privKeyArr) {
 }
 
 /**
+ * Writes/Updates wallets json file
+ * @param {Array<string>} walletArr - Account array
+ * @example
+ * updateWalletJSON([{
+            index: allAccounts.length,
+            address: newAccount.address,
+            privateKey: privKeyArr,
+            type: 'user-imported',
+            contracts: []
+        }]);
+ */
+export function updateWalletJSON(walletArr) {
+    fs.writeFileSync(walletJSONPath, JSON.stringify(walletArr, null, 2));
+}
+
+/**
+ * Returns wallets' object from saved json file
+ * @returns {Object}
+ */
+export function getWalletJSON() {
+    return JSON.parse(fs.readFileSync(walletJSONPath));
+}
+
+/**
  * Get information for multiple accounts (internal)
  * @private
  * @async
@@ -144,6 +175,9 @@ function _deleteBySingIndex(_index) {
         for (let i = accountIndex; i < allAccounts.length; i++) {
             allAccounts[i].index = i;
         }
+
+        // Update wallet json file
+        fs.writeFileSync(walletJSONPath, JSON.stringify(allAccounts, null, 2));
         
         // Remove from accounts array if it exists there
         const regularIndex = accounts.findIndex(acc => acc.index === _index);

@@ -12,7 +12,9 @@ import {
     deleteByIndex, 
     deleteByIndexArr, 
     getAccountInfo, 
-    detectDupWallet
+    detectDupWallet,
+    updateWalletJSON,
+    getWalletJSON
  } from '../utils/accounter.js';
 
 /**
@@ -20,6 +22,7 @@ import {
  * @type {Array<Object>}
  */
 export let allAccounts = [];
+allAccounts = getWalletJSON();
 
 /**
  * Array containing only regular accounts (imported and generated)
@@ -50,6 +53,7 @@ export function addAccounts(privKeyArr) {
         throw `You need to add at least one private key. If you have no private key you can create new accounts by 'newAccounts()'! `;
     }
 
+    let newAccObj;
     const dupWallet = detectDupWallet(privKeyArr);
 
     if(dupWallet.status) {
@@ -60,38 +64,33 @@ export function addAccounts(privKeyArr) {
 
     if(typeof privKeyArr === 'string'){
         const newAccount = new ethers.Wallet(privKeyArr, provider);
-        allAccounts.push({
+        newAccObj = {
             index: allAccounts.length,
             address: newAccount.address,
             privateKey: privKeyArr,
             type: 'user-imported',
             contracts: []
-        });
-        accounts.push({
-            index: allAccounts.length - 1,
-            address: newAccount.address,
-            privateKey: privKeyArr,
-            type: 'user-imported',
-            contracts: []
-        });
+        }
+        allAccounts.push(newAccObj);
+        updateWalletJSON(allAccounts);
+        newAccObj.index = allAccounts.length - 1;
+        accounts.push(newAccObj);
         console.log(allAccounts[newFrom]);
     }
 
     if(Array.isArray(privKeyArr)){
         privKeyArr.map(privKey => {
             const newAccount = new ethers.Wallet(privKey, provider);
-            allAccounts.push({
+            newAccObj = {
                 index: allAccounts.length,
                 address: newAccount.address,
                 privateKey: privKey,
                 contracts: []
-            });
-            accounts.push({
-                index: allAccounts.length - 1,
-                address: newAccount.address,
-                privateKey: privKey,
-                contracts: []
-            });
+            }
+            allAccounts.push(newAccObj);
+            updateWalletJSON(allAccounts);
+            newAccObj.index = allAccounts.length - 1;
+            accounts.push(newAccObj);
         });
 
         console.log(allAccounts.slice(newFrom));
@@ -107,6 +106,7 @@ export function addAccounts(privKeyArr) {
  */
 export function addHD(phrase, count = 10) {
     const newFrom = allAccounts.length;
+    let newAccObj;
     const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
 
     const existingPhrase = allAccounts.find(wallet => wallet.phrase == phrase);
@@ -120,7 +120,7 @@ export function addHD(phrase, count = 10) {
         if(dupHDWallet.status) {
             throw `Error: Wallets may NOT be duplicated! You are adding wallet index ${dupHDWallet.index} again!`
         } else {
-            allAccounts.push({
+            newAccObj = {
                 index: allAccounts.length,
                 address: hdWallet.address,
                 phrase: hdWallet.mnemonic.phrase,
@@ -129,20 +129,13 @@ export function addHD(phrase, count = 10) {
                 path: hdWallet.path,
                 depth: hdWallet.depth,
                 contracts: []
-            });
-            hdAccounts.push({
-                index: allAccounts.length - 1,
-                address: hdWallet.address,
-                phrase: hdWallet.mnemonic.phrase,
-                privateKey: hdWallet.privateKey,
-                type: 'user-imported',
-                path: hdWallet.path,
-                depth: hdWallet.depth,
-                contracts: []
-            });
+            },
+            allAccounts.push(newAccObj);
+            newAccObj.index = allAccounts.length - 1;
+            hdAccounts.push(newAccObj);
         }
     }
-
+    updateWalletJSON(allAccounts);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }
@@ -156,25 +149,22 @@ export function addHD(phrase, count = 10) {
 export function createAccounts(count = 1) {
     const newAccounts = Array.from({length: count}, () => ethers.Wallet.createRandom());
     const newFrom = accounts.length;
+    let newAccObj;
 
     for(let i = 0; i < newAccounts.length; i++) {
-
-        allAccounts.push({
+        newAccObj = {
             index: allAccounts.length,
             address:  newAccounts[i].address,
             privateKey: newAccounts[i].privateKey,
             type: 'user-generated',
             contracts: []
-        });
-        accounts.push({
-            index: allAccounts.length - 1,
-            address: newAccounts[i].address,
-            privateKey: newAccounts[i].privateKey,
-            type: 'user-generated',
-            contracts: []
-        })
+        }
+        allAccounts.push(newAccObj);
+        newAccObj.index = allAccounts.length - 1;
+        accounts.push(newAccObj);
 
     }
+    updateWalletJSON(allAccounts);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }
@@ -188,10 +178,11 @@ export function createAccounts(count = 1) {
 export function createHD(count = 10) {
     const hdNode = ethers.HDNodeWallet.createRandom();
     const newFrom = allAccounts.length;
+    let newAccObj;
     
     for (let i = 0; i < count; i++) {
         const hdWallet = hdNode.derivePath(i.toString());
-        allAccounts.push({
+        newAccObj = {
             index: allAccounts.length,
             address: hdWallet.address,
             phrase: hdWallet.mnemonic.phrase,
@@ -202,21 +193,12 @@ export function createHD(count = 10) {
             path: hdWallet.path,
             depth: hdWallet.depth,
             contracts: []
-        });
-        hdAccounts.push({
-            index: allAccounts.length - 1,
-            address: hdWallet.address,
-            phrase: hdWallet.mnemonic.phrase,
-            privateKey: hdWallet.privateKey,
-            type: 'user-generated',
-            nonce: 0,
-            balance: 0,
-            path: hdWallet.path,
-            depth: hdWallet.depth,
-            contracts: []
-        });
+        }
+        allAccounts.push(newAccObj);
+        newAccObj.index = allAccounts.length - 1;
+        hdAccounts.push(newAccObj);
     }
-
+    updateWalletJSON(allAccounts);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }

@@ -20,7 +20,7 @@ import fs from 'fs';
  * Stored compiler config path
  * @type {string}
  */
-let compConfigPath = './localStorage/compilerConfig.json';
+const compConfigPath = './localStorage/compilerConfig.json';
 
 /**
  * Global compiler configuration state
@@ -40,7 +40,7 @@ let compConfig = {};
  * @property {number} optimizerRuns - Number of optimizer runs
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
-let compConfigFile = {};
+export let compConfigFile = {};
 
 /**
  * Global compiler configuration state
@@ -63,19 +63,19 @@ if(storedCompConfig){
   compConfigFile = storedCompConfig;
   compConfig.currentSolcInstance = await loadSolcVersion(compConfigFile.version);
   compConfig.optimizer = compConfigFile.optimizer;
-  compConfig.optimizerRuns = compConfigFile.optimizerRuns;
   compConfig.viaIR = compConfigFile.viaIR;
+  compConfig.optimizerRuns = compConfigFile.optimizerRuns;
 } else {
   compConfig = {
     currentSolcInstance: solc, // default local compiler
     optimizer: false,
-    optimizerRuns: 200,
-    viaIR: false
+    viaIR: false,
+    optimizerRuns: 200
   }
   compConfigFile.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
   compConfigFile.optimizer = compConfig.optimizer;
-  compConfigFile.optimizerRuns = compConfig.optimizerRuns;
   compConfigFile.viaIR = compConfig.viaIR;
+  compConfigFile.optimizerRuns = compConfig.optimizerRuns;
 
   // Update config file
   fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
@@ -155,8 +155,6 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
         console.log(`  Optimizer Runs: ${compConfig.optimizerRuns}`);
     }
     console.log(`  ViaIR: ${compConfig.viaIR ? 'Enabled' : 'Disabled'}`);
-    
-    return compConfig;
   } catch (error) {
       console.error('Error setting compiler options:', error.message);
       return null;

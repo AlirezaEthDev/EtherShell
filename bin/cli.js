@@ -35,6 +35,7 @@ import {
 
 import { deploy, add } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
+import { getConfigInfo } from '../src/services/config.js';
 
 /**
  * REPL instance for EtherShell interactive environment
@@ -62,6 +63,9 @@ r.context.compUpdate = updateCompiler;
 r.context.compInfo = getCompilerOptions;
 r.context.compOpts = compilerOptions;
 r.context.build = compile;
+
+// Config commands
+r.context.configInfo = getConfigInfo;
 
 // Clean build folder
 r.context.clean = deleteDirectory;

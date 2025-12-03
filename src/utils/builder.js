@@ -167,3 +167,18 @@ export function build(fullPath, selectedContracts, buildPath){
   });
 }
 
+/**
+ * Extract loadable version format from full version string
+ * @param {string} fullVersion - Full version string (e.g., "0.8.20+commit.a1b79de6.Emscripten.clang")
+ * @returns {string} Loadable version format (e.g., "v0.8.20+commit.a1b79de6")
+ * @example
+ * extractLoadableVersion("0.8.20+commit.a1b79de6.Emscripten.clang"); // Returns: "v0.8.20+commit.a1b79de6"
+ */
+export function extractLoadableVersion(fullVersion) {
+  // Match version number and commit hash from full version string
+  const match = fullVersion.match(/(\d+\.\d+\.\d+)\+commit\.([a-f0-9]+)/);
+  if (!match) {
+    throw new Error(`Unable to extract version from: ${fullVersion}`);
+  }
+  return `v${match[1]}+commit.${match[2]}`;
+}

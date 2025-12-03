@@ -8,7 +8,12 @@
 import path from 'path';
 import solc from 'solc';
 import { check, collectSolFiles } from '../utils/dir.js';
-import { setVersion, build } from '../utils/builder.js';
+import { 
+  setVersion,
+  build, 
+  loadSolcVersion, 
+  extractLoadableVersion 
+} from '../utils/builder.js';
 import fs from 'fs';
 
 /**
@@ -56,7 +61,7 @@ if(fs.existsSync(compConfigPath)){
 // Initialize global configuration of compiler
 if(storedCompConfig){
   compConfigFile = storedCompConfig;
-  compConfig.currentSolcInstance = await setVersion(compConfigFile.version, compConfig.currentSolcInstance);
+  compConfig.currentSolcInstance = await loadSolcVersion(compConfigFile.version);
   compConfig.optimizer = compConfigFile.optimizer;
   compConfig.optimizerRuns = compConfigFile.optimizerRuns;
   compConfig.viaIR = compConfigFile.viaIR;
@@ -67,7 +72,7 @@ if(storedCompConfig){
     optimizerRuns: 200,
     viaIR: false
   }
-  compConfigFile.version = compConfig.currentSolcInstance.version();
+  compConfigFile.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
   compConfigFile.optimizer = compConfig.optimizer;
   compConfigFile.optimizerRuns = compConfig.optimizerRuns;
   compConfigFile.viaIR = compConfig.viaIR;
@@ -91,7 +96,7 @@ export async function updateCompiler(version){
     compConfig.currentSolcInstance = await setVersion(version, compConfig.currentSolcInstance);
 
     // Update config file
-    compConfigFile.version = compConfig.currentSolcInstance.version();
+    compConfigFile.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
     fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
   } catch(err) {
     console.error(err);

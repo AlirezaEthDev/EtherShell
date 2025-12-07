@@ -17,10 +17,10 @@ import {
 import fs from 'fs';
 
 /**
- * Stored compiler config path
+ * Stored config path
  * @type {string}
  */
-const compConfigPath = './localStorage/compilerConfig.json';
+export const configPath = './localStorage/config.json';
 
 /**
  * Global compiler configuration state
@@ -40,7 +40,10 @@ let compConfig = {};
  * @property {number} optimizerRuns - Number of optimizer runs
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
-export let compConfigFile = {};
+export let configFile = { 
+    defaultAccount: {},
+    compiler: {} 
+  };
 
 /**
  * Global compiler configuration state
@@ -52,19 +55,21 @@ export let compConfigFile = {};
 let storedCompConfig;
 
 // Load config file
-if(fs.existsSync(compConfigPath)){
-  storedCompConfig = JSON.parse(fs.readFileSync(compConfigPath));
+if(fs.existsSync(configPath)){
+  storedCompConfig = JSON.parse(fs.readFileSync(configPath));
 } else {
   storedCompConfig = null;
 }
 
 // Initialize global configuration of compiler
 if(storedCompConfig){
-  compConfigFile = storedCompConfig;
-  compConfig.currentSolcInstance = await loadSolcVersion(compConfigFile.version);
-  compConfig.optimizer = compConfigFile.optimizer;
-  compConfig.viaIR = compConfigFile.viaIR;
-  compConfig.optimizerRuns = compConfigFile.optimizerRuns;
+  configFile.compiler = storedCompConfig.compiler;
+  console.info(`Compiler is loading ...`);
+  compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);
+  console.info(`Loading done!`);
+  compConfig.optimizer = configFile.compiler.optimizer;
+  compConfig.viaIR = configFile.compiler.viaIR;
+  compConfig.optimizerRuns = configFile.compiler.optimizerRuns;
 } else {
   compConfig = {
     currentSolcInstance: solc, // default local compiler
@@ -72,13 +77,13 @@ if(storedCompConfig){
     viaIR: false,
     optimizerRuns: 200
   }
-  compConfigFile.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
-  compConfigFile.optimizer = compConfig.optimizer;
-  compConfigFile.viaIR = compConfig.viaIR;
-  compConfigFile.optimizerRuns = compConfig.optimizerRuns;
+  configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
+  configFile.compiler.optimizer = compConfig.optimizer;
+  configFile.compiler.viaIR = compConfig.viaIR;
+  configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
 
   // Update config file
-  fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
+  fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }
 
 /**
@@ -96,8 +101,8 @@ export async function updateCompiler(version){
     compConfig.currentSolcInstance = await setVersion(version, compConfig.currentSolcInstance);
 
     // Update config file
-    compConfigFile.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
-    fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
+    configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
+    fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
   } catch(err) {
     console.error(err);
   }
@@ -141,12 +146,12 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
     compConfig.viaIR = viaIR;
     compConfig.optimizerRuns = optimizerRuns;
 
-    compConfigFile.optimizer = compConfig.optimizer;
-    compConfigFile.viaIR = compConfig.viaIR;
-    compConfigFile.optimizerRuns = compConfig.optimizerRuns;
+    configFile.compiler.optimizer = compConfig.optimizer;
+    configFile.compiler.viaIR = compConfig.viaIR;
+    configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
 
     // Update config file
-    fs.writeFileSync(compConfigPath, JSON.stringify(compConfigFile, null, 2));
+    fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 
     // Provide user feedback
     console.log('✓ Compiler options updated:');

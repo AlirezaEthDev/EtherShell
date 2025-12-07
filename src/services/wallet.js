@@ -15,8 +15,10 @@ import {
     detectDupWallet,
     updateWalletJSON,
     getWalletJSON,
-    updateAccountMemory
+    updateAccountMemory,
+    setDefaultAccount
  } from '../utils/accounter.js';
+ import { configFile } from './build.js';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)
@@ -24,6 +26,11 @@ import {
  */
 export let allAccounts = [];
 allAccounts = getWalletJSON();
+
+// Set the default account from stored wallets
+if(allAccounts) {
+    configFile.defaultAccount = allAccounts[0];
+}
 
 /**
  * Array containing only regular accounts (imported and generated)
@@ -101,6 +108,7 @@ export function addAccounts(privKeyArr) {
 
         console.log(allAccounts.slice(newFrom));
     }
+    setDefaultAccount(allAccounts[0]);
 }
 
 /**
@@ -142,6 +150,7 @@ export function addHD(phrase, count = 10) {
         }
     }
     updateWalletJSON(allAccounts);
+    setDefaultAccount(allAccounts[0]);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }
@@ -171,6 +180,7 @@ export function createAccounts(count = 1) {
 
     }
     updateWalletJSON(allAccounts);
+    setDefaultAccount(allAccounts[0]);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }
@@ -205,6 +215,7 @@ export function createHD(count = 10) {
         hdAccounts.push(newAccObj);
     }
     updateWalletJSON(allAccounts);
+    setDefaultAccount(allAccounts[0]);
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     console.log(allAccounts.slice(newFrom));
 }

@@ -208,6 +208,17 @@ EtherShell> compOpts(true, false, 1000)
 // Get current options
 EtherShell> compInfo()
 { optimizer: true, optimizerRuns: 1000, viaIR: false }
+
+// Get current config info
+EtherShell> configInfo()
+{ compiler: 
+    {
+      version: 'v0.8.29+commit.ab55807c',
+      optimizer: false,
+      viaIR: false,
+      optimizerRuns: 200
+    }
+  }
 ```
 
 #### Compile Contracts

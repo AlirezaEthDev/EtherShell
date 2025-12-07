@@ -8,6 +8,7 @@
 import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
 import { provider } from '../services/network.js';
 import fs from 'fs';
+import { configFile, configPath } from '../services/build.js';
 
 /**
  * The path which in wallets json file will be saved.
@@ -268,4 +269,13 @@ function _deleteAll() {
     hdAccounts.splice(0);
     fs.writeFileSync(walletJSONPath, JSON.stringify([], null, 2));
     return;
+}
+
+/**
+ * Updates default account in config file
+ * @param {Object} account - // The given account to set as default account
+ */
+export function setDefaultAccount(account) {
+    configFile.defaultAccount = account;
+    fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }

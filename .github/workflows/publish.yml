@@ -34,9 +34,9 @@ jobs:
         id: npm-tag
         run: |
           if [[ "${{ github.event.release.tag_name }}" == *"alpha"* ]]; then
-            echo "tag=alpha" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
           elif [[ "${{ github.event.release.tag_name }}" == *"beta"* ]]; then
-            echo "tag=beta" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi

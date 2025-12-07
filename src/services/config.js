@@ -1,5 +1,5 @@
-import { compConfigFile } from './build.js';
+import { configFile } from './build.js';
 
 export function getConfigInfo() {
-    console.log(compConfigFile); 
+    console.log(configFile); 
 }

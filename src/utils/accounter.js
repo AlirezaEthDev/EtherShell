@@ -9,6 +9,7 @@ import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
 import { provider } from '../services/network.js';
 import fs from 'fs';
 import { configFile, configPath } from '../services/build.js';
+import { serializeBigInts } from './serialize.js';
 
 /**
  * The path which in wallets json file will be saved.
@@ -276,6 +277,6 @@ function _deleteAll() {
  * @param {Object} account - // The given account to set as default account
  */
 export function setDefaultAccount(account) {
-    configFile.defaultWallet = account;
+    configFile.defaultWallet = serializeBigInts(account);
     fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }

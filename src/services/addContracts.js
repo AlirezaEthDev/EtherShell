@@ -12,6 +12,7 @@ import { provider } from './network.js';
 import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
+import { configFile } from './build.js';
 
 /**
  * Local storage instance for persisting contract metadata
@@ -43,6 +44,7 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
     try {
         let currentProvider;
         let connectedChain;
+        let wallet;
 
         if(!contractName) {
             throw new Error('Contract name is empty');
@@ -54,17 +56,17 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
             throw new Error('Wallet index is out of range');
         }
 
-        if(!accIndex) {
-            accIndex = 0;
-        }
-
         if(chain) {
             currentProvider = new ethers.JsonRpcProvider(chain);
         } else {
             currentProvider = provider;
         }
 
-        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
+        if(!accIndex && accIndex !== 0) {
+            accIndex = configFile.defaultWallet.index;
+        }
+
+        wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
         connectedChain = await currentProvider.getNetwork();
 
         const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
@@ -144,13 +146,10 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
     try {
         let currentProvider;
         let connectedChain;
+        let wallet;
 
         if(!contractAddr) {
             throw new Error('Contract address may not be null or undefined!');
-        }
-
-        if(!accIndex) {
-            accIndex = 0;
         }
 
         if(chain) {
@@ -159,14 +158,15 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
             currentProvider = provider;
         }
 
-        let wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
-        connectedChain = await currentProvider.getNetwork();
-
-        if(!abiLoc) {
-            throw new Error('ABI path may not be null or undefined!');
+        if(!accIndex && accIndex !== 0) {
+            accIndex = configFile.defaultWallet.index;
         }
 
-        const abi  = JSON.parse(fs.readFileSync(abiLoc, 'utf8'));
+        wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
+        connectedChain = await currentProvider.getNetwork();
+
+        const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
+        const abi  = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
         const newContract = new ethers.Contract(contractAddr, abi, wallet);
 

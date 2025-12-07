@@ -19,12 +19,13 @@ import path from 'path';
 export function deleteDirectory(dirPath){
   try {
     if(!dirPath){    
-      dirPath = path.resolve('..', 'build');
+      dirPath = path.resolve('.', 'build');
     }
     // Check if the directory exists
     if(!fs.existsSync(dirPath)){
       console.log('Path is not a directory');
-      return;    }
+      return;    
+    }
 
     // For Node.js 14.14.0+ (recommended)
     fs.rmSync(dirPath, { recursive: true, force: true });

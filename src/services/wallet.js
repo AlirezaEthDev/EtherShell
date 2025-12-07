@@ -18,7 +18,8 @@ import {
     updateAccountMemory,
     setDefaultAccount
  } from '../utils/accounter.js';
- import { configFile } from './build.js';
+ import { configFile, configPath } from './build.js';
+ import fs from 'fs';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)
@@ -28,9 +29,15 @@ export let allAccounts = [];
 allAccounts = getWalletJSON();
 
 // Set the default account from stored wallets
-if(allAccounts) {
-    configFile.defaultAccount = allAccounts[0];
+const defWallet = JSON.parse(fs.readFileSync(configPath)).defaultWallet;
+if(defWallet.address) {
+    setDefaultAccount(defWallet);
+} else {
+    if(allAccounts && allAccounts.length > 0) {
+        setDefaultAccount(allAccounts[0]);
+    }
 }
+
 
 /**
  * Array containing only regular accounts (imported and generated)
@@ -367,6 +374,46 @@ export async function getWalletInfo(accPointer) {
 
         if(Array.isArray(accPointer)) {
             await getAccountInfo(accPointer);
+        }
+    
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+/**
+ * Changes the default account in config file by user
+ * @param {number | string} accPointer 
+ * @throws {Error} If input is empty or invalid
+ */
+export function changeDefaultAccount(accPointer) {
+    try {
+        if(!accPointer && accPointer != 0) {
+            throw new Error('Error: Empty input is NOT valid!');
+        }
+
+        if(typeof accPointer === 'number') {
+            const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
+            setDefaultAccount(allAccounts[index]);
+        }
+
+        if(ethers.isAddress(accPointer)) {
+            const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
+            setDefaultAccount(allAccounts[index]);
+        }
+
+        if(ethers.isHexString(accPointer, 32)) {
+            const newAccount = new ethers.Wallet(accPointer, provider);
+            const newAccObj = {
+                index: allAccounts.length,
+                address: newAccount.address,
+                privateKey: accPointer,
+                type: 'user-imported',
+                contracts: []
+            }
+            allAccounts.push(newAccObj);
+            accounts.push(newAccObj);
+            setDefaultAccount(newAccObj);
         }
     
     } catch(err) {

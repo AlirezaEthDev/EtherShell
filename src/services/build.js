@@ -41,7 +41,7 @@ let compConfig = {};
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
 export let configFile = { 
-    defaultAccount: {},
+    defaultWallet: {},
     compiler: {} 
   };
 

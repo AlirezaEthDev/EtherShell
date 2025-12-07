@@ -30,12 +30,13 @@ import {
     addHD,
     getAllAccounts,
     connectWallet,
-    getWalletInfo
+    getWalletInfo,
+    changeDefaultAccount
     } from '../src/services/wallet.js';
 
 import { deploy, add } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
-import { getConfigInfo } from '../src/services/config.js';
+import { getConfigInfo, getDefaultAccount } from '../src/services/config.js';
 
 /**
  * REPL instance for EtherShell interactive environment
@@ -66,6 +67,8 @@ r.context.build = compile;
 
 // Config commands
 r.context.configInfo = getConfigInfo;
+r.context.changeDefWallet = changeDefaultAccount;
+r.context.defWallet = getDefaultAccount;
 
 // Clean build folder
 r.context.clean = deleteDirectory;

@@ -276,6 +276,6 @@ function _deleteAll() {
  * @param {Object} account - // The given account to set as default account
  */
 export function setDefaultAccount(account) {
-    configFile.defaultAccount = account;
+    configFile.defaultWallet = account;
     fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }

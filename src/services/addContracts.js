@@ -13,6 +13,7 @@ import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 import { configFile } from './build.js';
+import { changeSender } from '../utils/accounter.js';
 
 /**
  * Local storage instance for persisting contract metadata

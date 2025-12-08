@@ -181,6 +181,14 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
 
         const newContract = new ethers.Contract(contractAddr, abi, wallet);
 
+        // Create contract proxy
+        // Wrap the contract instace with proxy
+        const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
+
+        // Add to REPL context with proxy
+        r.context[contractName] = proxiedContract;
+        contracts.set(contractName, proxiedContract);
+
         // Update deployer contract list
         const contSpec = {
             address: newContract.target,
@@ -207,17 +215,6 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         newContract.chainId = connectedChain.chainId;
         newContract.deployType = 'pre-deployed',
         newContract.provider = currentProvider;
-
-        // Create contract proxy
-        // Get the contract instance from ethers
-        const contractAbi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
-
-        // Wrap the contract instace with proxy
-        const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
-
-        // Add to REPL context with proxy
-        r.context[contractName] = proxiedContract;
-        contracts.set(contractName, proxiedContract);
 
         // Add result
         const result = {

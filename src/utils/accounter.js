@@ -106,7 +106,8 @@ export function detectDupWallet(privKeyArr) {
         }]);
  */
 export function updateWalletJSON(walletArr) {
-    fs.writeFileSync(walletJSONPath, JSON.stringify(walletArr, null, 2));
+    const walletObj = serializeBigInts(walletArr);
+    fs.writeFileSync(walletJSONPath, JSON.stringify(walletObj, null, 2));
 }
 
 /**

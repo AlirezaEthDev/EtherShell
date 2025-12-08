@@ -13,7 +13,7 @@ import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 import { configFile } from './build.js';
-import { changeSender } from '../utils/accounter.js';
+import { createContractProxy } from '../utils/contractProxy.js';
 
 /**
  * Local storage instance for persisting contract metadata
@@ -107,11 +107,21 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         deployTx.deployType = 'ethershell-deployed',
         deployTx.provider = currentProvider;
 
-        // Add to contract list
-        contracts.set(contractName, deployTx);
+        //////////////////////////////////
 
-        // Add to REPL context
-        r.context[contractName] = deployTx;
+        // Create contract proxy
+        // Get the contract instance from ethers
+        const contractAbi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
+        const contractInstance = new ethers.Contract(deployTx.target, contractAbi, wallet);
+
+        // Wrap the contract instace with proxy
+        const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
+
+        // Add to REPL context with proxy
+        r.context[contractName] = proxiedContract;
+        contracts.set(contractName, proxiedContract);
+
+        ////////////////////////////////////////////
 
         const deployHash = deployTx.deploymentTransaction().hash;
         const tx = await provider.getTransaction(deployHash);
@@ -198,11 +208,16 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         newContract.deployType = 'pre-deployed',
         newContract.provider = currentProvider;
 
-        // Add to contract list
-        contracts.set(contractName, newContract);
+        // Create contract proxy
+        // Get the contract instance from ethers
+        const contractAbi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
-        // Add to REPL context
-        r.context[contractName] = newContract;
+        // Wrap the contract instace with proxy
+        const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
+
+        // Add to REPL context with proxy
+        r.context[contractName] = proxiedContract;
+        contracts.set(contractName, proxiedContract);
 
         // Add result
         const result = {

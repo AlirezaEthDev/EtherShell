@@ -10,7 +10,6 @@ import { provider } from '../services/network.js';
 import fs from 'fs';
 import { configFile, configPath } from '../services/build.js';
 import { serializeBigInts } from './serialize.js';
-import ethers from 'ethers';
 
 /**
  * The path which in wallets json file will be saved.

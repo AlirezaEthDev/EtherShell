@@ -41,6 +41,7 @@ let compConfig = {};
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
 export let configFile = { 
+    providerEndpoint: '',
     defaultWallet: {},
     compiler: {} 
   };
@@ -70,17 +71,20 @@ if(storedCompConfig){
   compConfig.optimizer = configFile.compiler.optimizer;
   compConfig.viaIR = configFile.compiler.viaIR;
   compConfig.optimizerRuns = configFile.compiler.optimizerRuns;
+  compConfig.compilePath = configFile.compiler.compilePath;
 } else {
   compConfig = {
     currentSolcInstance: solc, // default local compiler
     optimizer: false,
     viaIR: false,
-    optimizerRuns: 200
+    optimizerRuns: 200,
+    compilePath: './build'
   }
   configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
   configFile.compiler.optimizer = compConfig.optimizer;
   configFile.compiler.viaIR = compConfig.viaIR;
   configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
+  configFile.compiler.compilePath = compConfig.compilePath;
 
   // Update config file
   fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
@@ -192,7 +196,7 @@ export function compile(fullPath, selectedContracts, buildPath){
   try{
     // Set default path if buildPath is undefined
     if(!buildPath){
-      buildPath = path.resolve('.', 'build');
+      buildPath = compConfig.compilePath;
       [buildPath].forEach(check);
     }
 
@@ -221,4 +225,14 @@ export function compile(fullPath, selectedContracts, buildPath){
   } catch(err){
       console.error(err);
   }
+}
+
+/**
+ * Changes the default path to generate build files there
+ * @param {string} newPath - The new path to build
+ */
+export function changeCompPath(newPath) {
+  compConfig.compilePath = newPath;
+  configFile.compiler.compilePath = compConfig.compilePath;
+  fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }

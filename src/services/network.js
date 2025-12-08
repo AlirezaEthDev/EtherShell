@@ -7,6 +7,9 @@
 
 import { ethers } from 'ethers';
 import { LocalStorage } from 'node-localstorage';
+import { configPath } from './build.js';
+import fs from 'fs';
+import { changeProvider } from '../utils/configFileUpdate.js';
 
 /**
  * Local storage instance for persisting compiler artifacts paths
@@ -37,13 +40,14 @@ export let provider
  * The specific RPC endpoint URL saved on storage before.
  * @type {string}
  */
-const storedUrl = localStorage.getItem('url');
+const storedUrl = JSON.parse(fs.readFileSync(configPath)).providerEndpoint;
 if(storedUrl) {
-    provider = new ethers.JsonRpcProvider(storedUrl);;
-    currentUrl = storedUrl
+    provider = new ethers.JsonRpcProvider(storedUrl);
+    currentUrl = storedUrl;
 } else {
     provider = new ethers.JsonRpcProvider(defaultUrl);
     currentUrl = defaultUrl;
+    changeProvider(currentUrl);
 }
 
 
@@ -66,7 +70,7 @@ export async function set(url){
             name: result.name,
             chainId: result.chainId
         }    
-        localStorage.setItem('url', url);
+        changeProvider(currentUrl);
         console.log(network);
     }catch(err){
         console.error(err);

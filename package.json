@@ -1,0 +1,56 @@
+{
+  "name": "ethershell",
+  "license": "MIT",
+  "version": "0.1.0-beta.0",
+  "description": "Interactive JavaScript console for Ethereum smart contract management",
+  "author": "Alireza Kiakojouri (alirezaethdev@gmail.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlirezaEthDev/EtherShell"
+  },
+  "bugs": {
+    "url": "https://github.com/AlirezaEthDev/EtherShell/issues"
+  },
+  "homepage": "https://github.com/AlirezaEthDev/EtherShell",
+  "type": "module",
+  "bin": {
+    "ethershell": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "dev": "nodemon bin/cli.js",
+    "test": "echo \"No tests yet\" && exit 0",
+    "lint": "echo \"No linting configured\" && exit 0",
+    "prepublishOnly": "npm test"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ethereum",
+    "cli",
+    "smart-contracts",
+    "solidity",
+    "blockchain"
+  ],
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ethers": "^6.13.0",
+    "node-localstorage": "^3.0.5",
+    "solc": "^0.8.29",
+    "vm": "^0.1.0"
+  },
+  "preferGlobal": true,
+  "files": [
+    "bin/",
+    "src/",
+    "LICENSE",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@typechain/ethers-v6": "^0.5.1",
+    "@types/node": "^24.10.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.9.3"
+  }
+}

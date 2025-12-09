@@ -1,5 +1,6 @@
 {
   "name": "ethershell",
+  "license": "MIT",
   "version": "0.1.1-alpha.15",
   "description": "Interactive JavaScript console for Ethereum smart contract management",
   "author": "Alireza Kiakojouri (alirezaethdev@gmail.com)",

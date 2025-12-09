@@ -45,5 +45,11 @@
     "src/",
     "LICENSE",
     "README.md"
-  ]
+  ],
+  "devDependencies": {
+    "@typechain/ethers-v6": "^0.5.1",
+    "@types/node": "^24.10.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.9.3"
+  }
 }

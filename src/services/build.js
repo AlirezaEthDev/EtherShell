@@ -15,6 +15,10 @@ import {
   extractLoadableVersion 
 } from '../utils/builder.js';
 import fs from 'fs';
+import { 
+  generateAllTypes,
+  generateContractTypes 
+} from '../utils/typeGenerator.js';
 
 /**
  * Stored config path
@@ -222,6 +226,11 @@ export function compile(fullPath, selectedContracts, buildPath){
       build(fullPath, selectedContracts, buildPath);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
+
+    // Generate TypeScript types
+    const typesOutputPath = path.join(buildPath, 'types');
+    generateAllTypes(buildPath, typesOutputPath);
+    console.log(`TypeScript types generated in ${path.resolve(typesOutputPath)}`);
   } catch(err){
       console.error(err);
   }

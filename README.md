@@ -515,7 +515,7 @@ EtherShell> contracts()
 ### Contract Commands
 | Command | Description |
 |---------|-------------|
-| `deploy(name, args, index)` | Deploy new contract |
+| `deploy(name, [args], [index], [chainURL], [abiLocation], [bytecodeLocation])` | Deploy new contract |
 | `addContract(name, address, index, abiPath)` | Add existing contract |
 | `contracts([pointer])` | List contracts or get specific one |
 
@@ -609,7 +609,7 @@ contract MyToken {
 EtherShell> build('./contracts/MyToken.sol')
 
 // 2. Deploy
-EtherShell> deploy('MyToken', [], 0)
+EtherShell> deploy('MyToken')
 
 // 3. Interact
 EtherShell> MyToken.balanceOf('0x...')

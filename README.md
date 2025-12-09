@@ -277,7 +277,35 @@ build/
 #### Deploy New Contracts
 
 ```javascript
-// Deploy MyToken contract with constructor args
+// Deploy contract without constructor args and with default wallet
+// Arguments: contractName
+EtherShell> deploy('contractName')
+{
+  hash: '0x123abc...',
+  from: '0x1234...5678',
+  to: null,
+  address: '0xabcd...ef01',
+  name: 'contractName',
+  chain: 'sepolia',
+  chainId: 11155111n,
+  deployType: 'ethershell-deployed'
+}
+
+// Deploy MyToken contract with constructor args and default wallet
+// Arguments: contractName, args[], walletIndex, [chainURL], [abiLocation], [bytecodeLocation]
+EtherShell> deploy('MyToken', ['MyTokenName', 'MTK', 1000000])
+{
+  hash: '0x123abc...',
+  from: '0x1234...5678',
+  to: null,
+  address: '0xabcd...ef01',
+  name: 'MyToken',
+  chain: 'sepolia',
+  chainId: 11155111n,
+  deployType: 'ethershell-deployed'
+}
+
+// Deploy MyToken contract with constructor args and a non-default wallet
 // Arguments: contractName, args[], walletIndex, [chainURL], [abiLocation], [bytecodeLocation]
 EtherShell> deploy('MyToken', ['MyTokenName', 'MTK', 1000000], 0)
 {
@@ -380,10 +408,10 @@ ContractTransactionResponse { ... }
 // Call with advanced transaction options
 EtherShell> MyToken.transfer('0xRecipientAddress', 100, {
   from: '0xSenderAddress',          // Switch signer
-  value: ethers.parseEther('1'),    // Send ETH (for payable functions)
+  value: 10000000000000n,    // Send ETH (for payable functions)
   gasLimit: 500000,                 // Custom gas limit
-  maxFeePerGas: ethers.parseUnits('100', 'gwei'),    // EIP-1559
-  maxPriorityFeePerGas: ethers.parseUnits('2', 'gwei'),
+  maxFeePerGas: 100000000000n,    // EIP-1559
+  maxPriorityFeePerGas: 2000000000n,
   nonce: 42,
   chainId: 1
 })
@@ -428,7 +456,7 @@ EtherShell> compOpts(true, false, 1000)
 EtherShell> build()
 
 // 6. Deploy contract
-EtherShell> deploy('MyToken', ['TestToken', 'TEST', 1000000], 0)
+EtherShell> deploy('MyToken', ['TestToken', 'TEST', 1000000])
 
 // 7. Interact with contract
 EtherShell> MyToken.balanceOf('0x...')
@@ -437,7 +465,7 @@ EtherShell> MyToken.balanceOf('0x...')
 // 8. Transfer tokens with custom options
 EtherShell> tx = MyToken.transfer('0x...', 100, {
   gasLimit: 100000,
-  maxFeePerGas: ethers.parseUnits('50', 'gwei')
+  maxFeePerGas: 50000000000n
 })
 
 // 9. Check balance again

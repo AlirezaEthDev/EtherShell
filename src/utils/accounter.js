@@ -115,7 +115,14 @@ export function updateWalletJSON(walletArr) {
  * @returns {Object}
  */
 export function getWalletJSON() {
-    return JSON.parse(fs.readFileSync(walletJSONPath));
+    if(fs.existsSync(walletJSONPath)){
+        return JSON.parse(fs.readFileSync(walletJSONPath));
+    } else {
+        // Generate wallet.json if it doesn't exist
+        const fd = fs.openSync(walletJSONPath, 'w');
+        fs.closeSync(fd);
+        return [];
+    }
 }
 
 export function updateAccountMemory(allAccArr) {

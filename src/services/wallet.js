@@ -18,15 +18,14 @@ import {
     updateAccountMemory,
     setDefaultAccount
  } from '../utils/accounter.js';
- import { configFile, configPath } from './build.js';
+ import { configPath } from './build.js';
  import fs from 'fs';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)
  * @type {Array<Object>}
  */
-export let allAccounts = [];
-allAccounts = getWalletJSON();
+export let allAccounts = getWalletJSON();
 
 // Set the default account from stored wallets
 const defWallet = JSON.parse(fs.readFileSync(configPath)).defaultWallet;

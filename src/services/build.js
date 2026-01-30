@@ -17,7 +17,6 @@ import {
 import fs from 'fs';
 import { 
   generateAllTypes,
-  generateContractTypes 
 } from '../utils/typeGenerator.js';
 
 /**

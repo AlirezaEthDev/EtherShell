@@ -6,7 +6,6 @@
  */
 
 import { ethers } from 'ethers';
-import { LocalStorage } from 'node-localstorage';
 import { configPath } from './build.js';
 import fs from 'fs';
 import { changeProvider } from '../utils/configFileUpdate.js';

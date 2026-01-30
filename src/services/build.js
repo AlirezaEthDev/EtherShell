@@ -153,11 +153,10 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
     compConfig.viaIR = viaIR;
     compConfig.optimizerRuns = optimizerRuns;
 
+    // Update config file
     configFile.compiler.optimizer = compConfig.optimizer;
     configFile.compiler.viaIR = compConfig.viaIR;
     configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
-
-    // Update config file
     fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 
     // Provide user feedback
@@ -181,7 +180,7 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
  * const opts = getCompilerOptions();
  */
 export function getCompilerOptions() {
-  return { ...compConfig };
+  return { ...configFile.compiler };
 }
 
 /**

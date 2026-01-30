@@ -19,7 +19,7 @@ import { createContractProxy } from '../utils/contractProxy.js';
  * Local storage instance for persisting contract metadata
  * @type {LocalStorage}
  */
-const localStorage = new LocalStorage('./localStorage');
+const localStorage = new LocalStorage('./ethershell');
 
 /**
  * Map of all deployed and added contracts

@@ -12,12 +12,6 @@ import fs from 'fs';
 import { changeProvider } from '../utils/configFileUpdate.js';
 
 /**
- * Local storage instance for persisting compiler artifacts paths
- * @type {LocalStorage}
- */
-const localStorage = new LocalStorage('./localStorage');
-
-/**
  * Default JSON-RPC URL for local Ethereum node
  * @constant {string}
  */

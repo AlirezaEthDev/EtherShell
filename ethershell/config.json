@@ -1,0 +1,11 @@
+{
+  "providerEndpoint": "http://127.0.0.1:8545",
+  "defaultWallet": {},
+  "compiler": {
+    "version": "v0.8.29+commit.ab55807c",
+    "optimizer": true,
+    "viaIR": true,
+    "optimizerRuns": 200,
+    "compilePath": "./build"
+  }
+}

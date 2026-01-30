@@ -23,7 +23,7 @@ import {
  * Stored config path
  * @type {string}
  */
-export const configPath = './localStorage/config.json';
+export const configPath = './ethershell/config.json';
 
 /**
  * Global compiler configuration state
@@ -163,10 +163,11 @@ export function compilerOptions(gasOptimizer, viaIR, optimizerRuns = 200) {
     // Provide user feedback
     console.log('✓ Compiler options updated:');
     console.log(`  Gas Optimizer: ${compConfig.optimizer ? 'Enabled' : 'Disabled'}`);
+    console.log(`  ViaIR: ${compConfig.viaIR ? 'Enabled' : 'Disabled'}`);
     if (compConfig.optimizer) {
         console.log(`  Optimizer Runs: ${compConfig.optimizerRuns}`);
     }
-    console.log(`  ViaIR: ${compConfig.viaIR ? 'Enabled' : 'Disabled'}`);
+
   } catch (error) {
       console.error('Error setting compiler options:', error.message);
       return null;

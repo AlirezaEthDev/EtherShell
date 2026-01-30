@@ -15,7 +15,7 @@ import { serializeBigInts } from './serialize.js';
  * The path which in wallets json file will be saved.
  * @type {String}
  */
-const walletJSONPath = './localStorage/wallets.json';
+const walletJSONPath = './ethershell/wallets.json';
 
 /**
  * Delete account(s) by index
@@ -116,9 +116,15 @@ export function updateWalletJSON(walletArr) {
  */
 export function getWalletJSON() {
     if(fs.existsSync(walletJSONPath)){
-        return JSON.parse(fs.readFileSync(walletJSONPath));
+        const walletJSON = fs.readFileSync(walletJSONPath, 'utf8');
+        // Return empry array if wallet is empty
+        if(walletJSON.length === 0) {
+            return [];
+        } else {
+            return JSON.parse(fs.readFileSync(walletJSONPath));
+        }
     } else {
-        // Generate wallet.json if it doesn't exist
+        // Generate empty wallet.json if it doesn't exist
         const fd = fs.openSync(walletJSONPath, 'w');
         fs.closeSync(fd);
         return [];

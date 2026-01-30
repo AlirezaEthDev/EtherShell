@@ -16,7 +16,7 @@ import { LocalStorage } from 'node-localstorage';
  * Local storage instance for persisting compiler artifacts paths
  * @type {LocalStorage}
  */
-const localStorage = new LocalStorage('./localStorage');
+const localStorage = new LocalStorage('./ethershell');
 
 /**
  * Load a specific version of the Solidity compiler

@@ -35,7 +35,7 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 # Install globally:
 npm i -g ethershell
 
-# Start EtherShell:
+# Start EtherShell in the root directory of your project:
 ethershell 
 
 #or
@@ -46,7 +46,7 @@ npx ethershell
 ### Basic Usage
 
 ```bash
-# Start the console
+# Start the console in the root directory of your project:
 ethershell
 
 # You should see:

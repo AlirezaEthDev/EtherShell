@@ -57,6 +57,16 @@ export function collectSolFiles(dirPath) {
  */
 export function findImports(importPath, basePath) {
   try {
+    // Handle node_modules imports (e.g., @openzeppelin/contracts/...)
+    if (importPath.startsWith('@')) {
+      const nodeModulesPath = path.resolve(process.cwd(), 'node_modules', importPath);
+      
+      if (fs.existsSync(nodeModulesPath)) {
+        const content = fs.readFileSync(nodeModulesPath, 'utf8');
+        return { contents: content };
+      }
+    }
+
     // Resolve relative to the current file's directory
     const resolvedPath = path.resolve(basePath, importPath);
     

@@ -288,6 +288,7 @@ export function deleteAccount(accPointer) {
 
     if(Array.isArray(accPointer)) {
         deleteByIndexArr(accPointer);
+        console.log(allAccounts);
     }
 
     if(ethers.Mnemonic.isValidMnemonic(accPointer)) {

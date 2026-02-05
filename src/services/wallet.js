@@ -267,7 +267,7 @@ export function getHDAccounts() {
  * deleteAccount(); // Delete all accounts
  */
 export function deleteAccount(accPointer) {
-    if(!accPointer) {
+    if(!accPointer && accPointer !== 0) {
         deleteByIndex(null);
         console.log(allAccounts);
     }

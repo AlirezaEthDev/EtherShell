@@ -227,6 +227,11 @@ function _deleteBySingIndex(_index) {
                 _index++;
             }
         }
+
+        // Remove from config file if it is default wallet
+        if(accountIndex == configFile.defaultWallet.index) {
+            deleteDefaultAccount();
+        }
     }
 }
 
@@ -282,6 +287,7 @@ function _deleteAll() {
     allAccounts.splice(0);
     accounts.splice(0);
     hdAccounts.splice(0);
+    deleteDefaultAccount();
     fs.writeFileSync(walletJSONPath, JSON.stringify([], null, 2));
     return;
 }
@@ -292,5 +298,13 @@ function _deleteAll() {
  */
 export function setDefaultAccount(account) {
     configFile.defaultWallet = serializeBigInts(account);
+    fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+}
+
+/**
+ * Deletes default account from config file
+ */
+export function deleteDefaultAccount() {
+    configFile.defaultWallet = {};
     fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 }

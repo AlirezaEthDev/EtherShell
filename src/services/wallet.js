@@ -403,6 +403,10 @@ export function changeDefaultAccount(accPointer) {
         }
 
         if(ethers.isHexString(accPointer, 32)) {
+            const dupWallet = detectDupWallet(accPointer);
+            if(dupWallet.status) {
+                throw `Wallets may NOT be duplicated! You are adding wallet index ${dupWallet.index} again!`
+            }
             const newAccount = new ethers.Wallet(accPointer, provider);
             const newAccObj = {
                 index: allAccounts.length,

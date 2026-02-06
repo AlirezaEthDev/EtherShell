@@ -155,7 +155,17 @@ export function createContractProxy(contract, provider, allAccounts) {
         }
 
         // Call the method with remaining args and tx options
-        return method.apply(method, args);
+        const result = await method.apply(method, args);
+
+        // Check if result is a transaction response (has wait method)
+        if (result && typeof result.wait === 'function') {
+          // This is a transaction - wait for mining
+          const receipt = await result.wait();
+          return receipt;
+        }
+
+        // This is a view/pure function result - return as-is
+        return result;
       };
     }
   });

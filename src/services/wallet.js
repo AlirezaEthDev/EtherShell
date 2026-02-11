@@ -233,7 +233,7 @@ export function createHD(count = 10) {
  */
 export function getAllAccounts() {
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(allAccounts);
+    return allAccounts;
 }
 
 /**
@@ -243,7 +243,7 @@ export function getAllAccounts() {
  */
 export function getAccounts() {
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(accounts);
+    return accounts;
 }
 
 /**
@@ -253,7 +253,7 @@ export function getAccounts() {
  */
 export function getHDAccounts() {
     console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(hdAccounts);
+    return hdAccounts;
 }
 
 /**

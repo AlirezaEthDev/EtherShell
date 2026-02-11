@@ -88,16 +88,6 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         }
 
         allAccounts[accIndex].contracts.push(contSpec);
-        
-        const accountsIndex = accounts.findIndex(wallet => wallet.index == accIndex);
-        if(accountsIndex >= 0) {
-            accounts[accountsIndex].contracts.push(contSpec);
-        }
-
-        const hdIndex = hdAccounts.findIndex(wallet => wallet.index == accIndex);
-        if(hdIndex >= 0) {
-            hdAccounts[hdIndex].contracts.push(contSpec);
-        }
 
         // Extend contract object
         deployTx.index = Array.from(contracts.values()).length;
@@ -116,6 +106,13 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
 
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
+
+        proxiedContract.index = Array.from(contracts.values()).length;
+        proxiedContract.name = contractName;
+        proxiedContract.chain = connectedChain.name;
+        proxiedContract.chainId = connectedChain.chainId;
+        proxiedContract.deployType = 'ethershell-deployed';
+        proxiedContract.provider = currentProvider;
 
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;
@@ -185,6 +182,13 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
 
+        proxiedContract.index = Array.from(contracts.values()).length;
+        proxiedContract.name = contractName;
+        proxiedContract.chain = connectedChain.name;
+        proxiedContract.chainId = connectedChain.chainId;
+        proxiedContract.deployType = 'ethershell-deployed';
+        proxiedContract.provider = currentProvider;
+
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;
         contracts.set(contractName, proxiedContract);
@@ -197,16 +201,6 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         }
 
         allAccounts[accIndex].contracts.push(contSpec);
-        
-        const accountsIndex = accounts.findIndex(wallet => wallet.index == accIndex);
-        if(accountsIndex >= 0) {
-            accounts[accountsIndex].contracts.push(contSpec);
-        }
-
-        const hdIndex = hdAccounts.findIndex(wallet => wallet.index == accIndex);
-        if(hdIndex >= 0) {
-            hdAccounts[hdIndex].contracts.push(contSpec);
-        }
 
         // Extend contract object
         newContract.index = Array.from(contracts.values()).length;

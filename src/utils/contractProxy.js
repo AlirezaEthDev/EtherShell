@@ -25,6 +25,10 @@ import { ethers } from 'ethers';
 export function createContractProxy(contract, provider, allAccounts) {
   return new Proxy(contract, {
     get(target, prop) {
+      if (prop === 'provider') {
+        return provider;
+      }
+      
       // Pass through non-function properties
       if (typeof target[prop] !== 'function') {
         return target[prop];

@@ -1,8 +1,8 @@
 [
   {
     "index": 0,
-    "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    "privateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    "address": "0x0C6908C1B6DA3c0EE66d949a48599fe9EDbAEC8B",
+    "privateKey": "3b8d0c30b767610995d5af6d9c00bdf101ff435d8c708d981733963d7f8a70c6",
     "type": "user-imported",
     "contracts": []
   }

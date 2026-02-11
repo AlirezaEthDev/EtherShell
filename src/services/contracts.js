@@ -39,5 +39,5 @@ export async function getContracts(contPointer) {
         throw new Error('Input is NOT valid!');
     }
 
-    console.log(result);
+    return result;
 }

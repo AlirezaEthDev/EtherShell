@@ -18,8 +18,6 @@ import {
     updateAccountMemory,
     setDefaultAccount
  } from '../utils/accounter.js';
- import { configPath } from './config.js';
- import fs from 'fs';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)

@@ -1,5 +1,5 @@
 {
-  "providerEndpoint": "",
+  "providerEndpoint": "https://rpc.testnet.soniclabs.com",
   "defaultWallet": {
     "index": 0,
     "address": "0x0C6908C1B6DA3c0EE66d949a48599fe9EDbAEC8B",

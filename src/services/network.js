@@ -5,13 +5,12 @@
  * @module network
  */
 
-import { ethers } from 'ethers';
-import { configPath } from './config.js';
-import fs from 'fs';
 import { changeProvider } from '../utils/configFileUpdate.js';
 import { 
     currentUrl,
-    provider
+    setCurrentUrl,
+    provider,
+    setProvider
 } from './config.js';
 
 /**
@@ -25,8 +24,8 @@ import {
  */
 export async function set(url){
     try{
-        provider = new ethers.JsonRpcProvider(url);
-        currentUrl = url;
+        setProvider(url);
+        setCurrentUrl(url);
         const result = await provider.getNetwork();
         const network = {
             URL: currentUrl,

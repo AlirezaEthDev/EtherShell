@@ -1,12 +1,11 @@
-import { setDefaultAccount } from '../utils/accounter.js';
-import { changeProvider } from '../utils/configFileUpdate.js';
 import { 
     loadSolcVersion, 
     extractLoadableVersion 
-} from '../utils/builder';
+} from '../utils/builder.js';
 import { allAccounts } from './wallet.js';
-import { getWalletJSON } from '../utils/accounter.js';
 import { serializeBigInts } from '../utils/serialize.js';
+import fs from 'fs';
+import { ethers } from 'ethers';
 
 // Sync Config Memory with Storage Config:
 /**
@@ -90,10 +89,11 @@ const storedUrl = configObj.providerEndpoint;
 if(storedUrl) {
     provider = new ethers.JsonRpcProvider(storedUrl);
     currentUrl = storedUrl;
+    configFile.providerEndpoint = storedUrl;
 } else {
     provider = new ethers.JsonRpcProvider(defaultUrl);
     currentUrl = defaultUrl;
-    configFile.providerEndpoint = url;
+    configFile.providerEndpoint = defaultUrl;
 }
 
 // 3) Set Compiler to Memeory:
@@ -135,6 +135,30 @@ if(defWallet.address) {
 
 // 5) Update config file
 fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+
+/**
+ * Changes provider just in memory
+ * @param {Object} newProvider 
+ */
+export function setProvider(newProvider) {
+    provider = new ethers.JsonRpcProvider(newProvider);
+}
+
+/**
+ * Changes provider just in memory
+ * @param {String} newUrl 
+ */
+export function setCurrentUrl(newUrl) {
+    currentUrl = newUrl;
+}
+
+/**
+ * Changes configFile in memory
+ * @param {Object} newConfig 
+ */
+export function setConfigFile(newConfig) {
+    configFile = newConfig;
+}
 
 /**
  * Gets all fields of config file

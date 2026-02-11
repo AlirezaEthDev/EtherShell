@@ -6,12 +6,10 @@
  */
 
 import path from 'path';
-import solc from 'solc';
 import { check, collectSolFiles } from '../utils/dir.js';
 import { 
   setVersion,
   build, 
-  loadSolcVersion, 
   extractLoadableVersion 
 } from '../utils/builder.js';
 import fs from 'fs';

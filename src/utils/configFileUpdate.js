@@ -1,4 +1,4 @@
-import { configFile, configPath } from '../services/build.js';
+import { configFile, configPath } from '../services/config.js';
 import fs from 'fs';
 
 export function changeProvider(url) {

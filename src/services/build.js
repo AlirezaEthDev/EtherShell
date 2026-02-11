@@ -18,80 +18,10 @@ import fs from 'fs';
 import { 
   generateAllTypes,
 } from '../utils/typeGenerator.js';
-
-/**
- * Stored config path
- * @type {string}
- */
-export const configPath = './ethershell/config.json';
-
-/**
- * Global compiler configuration state
- * @type {Object}
- * @property {Object} currentSolcInstance - Current Solidity compiler instance
- * @property {boolean} optimizer - Whether gas optimizer is enabled
- * @property {number} optimizerRuns - Number of optimizer runs
- * @property {boolean} viaIR - Whether to use IR-based code generation
- */
-let compConfig = {};
-
-/**
- * JSON file fields of compiler configuration
- * @type {Object}
- * @property {string} version - Current Solidity compiler version
- * @property {boolean} optimizer - Whether gas optimizer is enabled
- * @property {number} optimizerRuns - Number of optimizer runs
- * @property {boolean} viaIR - Whether to use IR-based code generation
- */
-export let configFile = { 
-    providerEndpoint: '',
-    defaultWallet: {},
-    compiler: {} 
-  };
-
-/**
- * Global compiler configuration state
- * @type {Object}
- * @property {boolean} optimizer - Whether gas optimizer is enabled
- * @property {number} optimizerRuns - Number of optimizer runs
- * @property {boolean} viaIR - Whether to use IR-based code generation
- */
-let storedCompConfig;
-
-// Load config file
-if(fs.existsSync(configPath)){
-  storedCompConfig = JSON.parse(fs.readFileSync(configPath));
-} else {
-  storedCompConfig = null;
-}
-
-// Initialize global configuration of compiler
-if(storedCompConfig){
-  configFile.compiler = storedCompConfig.compiler;
-  console.info(`Compiler is loading ...`);
-  compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);
-  console.info(`Loading done!`);
-  compConfig.optimizer = configFile.compiler.optimizer;
-  compConfig.viaIR = configFile.compiler.viaIR;
-  compConfig.optimizerRuns = configFile.compiler.optimizerRuns;
-  compConfig.compilePath = configFile.compiler.compilePath;
-} else {
-  compConfig = {
-    currentSolcInstance: solc, // default local compiler
-    optimizer: false,
-    viaIR: false,
-    optimizerRuns: 200,
-    compilePath: './build'
-  }
-  configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
-  configFile.compiler.optimizer = compConfig.optimizer;
-  configFile.compiler.viaIR = compConfig.viaIR;
-  configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
-  configFile.compiler.compilePath = compConfig.compilePath;
-
-  // Update config file
-  fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
-}
+import { 
+  configPath,
+  configFile
+} from './config.js';
 
 /**
  * Update the Solidity compiler to a specific version

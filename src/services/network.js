@@ -6,43 +6,13 @@
  */
 
 import { ethers } from 'ethers';
-import { configPath } from './build.js';
+import { configPath } from './config.js';
 import fs from 'fs';
 import { changeProvider } from '../utils/configFileUpdate.js';
-
-/**
- * Default JSON-RPC URL for local Ethereum node
- * @constant {string}
- */
-const defaultUrl = 'http://127.0.0.1:8545' ;
-
-/**
- * Currently active network URL
- * @type {string}
- */
-export let currentUrl;
-
-/**
- * Ethers.js JSON-RPC provider instance
- * @type {ethers.JsonRpcProvider}
- */
-export let provider 
-
-// Initialize provider with default URL
-/**
- * The specific RPC endpoint URL saved on storage before.
- * @type {string}
- */
-const storedUrl = JSON.parse(fs.readFileSync(configPath)).providerEndpoint;
-if(storedUrl) {
-    provider = new ethers.JsonRpcProvider(storedUrl);
-    currentUrl = storedUrl;
-} else {
-    provider = new ethers.JsonRpcProvider(defaultUrl);
-    currentUrl = defaultUrl;
-    changeProvider(currentUrl);
-}
-
+import { 
+    currentUrl,
+    provider
+} from './config.js';
 
 /**
  * Set a new network provider

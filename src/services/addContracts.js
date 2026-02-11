@@ -8,11 +8,11 @@
 
 import { ethers } from 'ethers';
 import fs from 'fs';
-import { provider } from './network.js';
+import { provider } from './config.js';
 import { allAccounts, accounts, hdAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
-import { configFile } from './build.js';
+import { configFile } from './config.js';
 import { createContractProxy } from '../utils/contractProxy.js';
 
 /**

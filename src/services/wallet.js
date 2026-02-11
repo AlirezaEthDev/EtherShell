@@ -7,7 +7,7 @@
  */
 
 import { ethers } from 'ethers';
-import { provider } from './network.js';
+import { provider } from './config.js';
 import { 
     deleteByIndex, 
     deleteByIndexArr, 
@@ -18,7 +18,7 @@ import {
     updateAccountMemory,
     setDefaultAccount
  } from '../utils/accounter.js';
- import { configPath } from './build.js';
+ import { configPath } from './config.js';
  import fs from 'fs';
 
 /**
@@ -26,17 +26,6 @@ import {
  * @type {Array<Object>}
  */
 export let allAccounts = getWalletJSON();
-
-// Set the default account from stored wallets
-const defWallet = JSON.parse(fs.readFileSync(configPath)).defaultWallet;
-if(defWallet.address) {
-    setDefaultAccount(defWallet);
-} else {
-    if(allAccounts && allAccounts.length > 0) {
-        setDefaultAccount(allAccounts[0]);
-    }
-}
-
 
 /**
  * Array containing only regular accounts (imported and generated)

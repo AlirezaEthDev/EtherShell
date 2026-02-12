@@ -40,7 +40,7 @@ export const configPath = './ethershell/config.json';
  * @property {number} optimizerRuns - Number of optimizer runs
  * @property {boolean} viaIR - Whether to use IR-based code generation
  */
-let compConfig = {};
+export let compConfig = {};
 
 /**
  * JSON file fields of compiler configuration

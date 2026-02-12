@@ -18,7 +18,8 @@ import {
 } from '../utils/typeGenerator.js';
 import { 
   configPath,
-  configFile
+  configFile,
+  compConfig
 } from './config.js';
 
 /**

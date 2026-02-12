@@ -1,5 +1,6 @@
 // src/utils/contractProxy.js
 import { ethers } from 'ethers';
+import { eventOf } from './event.js';
 
 /**
  * Creates a proxy wrapper for ethers.js Contract objects
@@ -165,6 +166,16 @@ export function createContractProxy(contract, provider, allAccounts) {
         if (result && typeof result.wait === 'function') {
           // This is a transaction - wait for mining
           const receipt = await result.wait();
+
+          // Get event values
+          const tx = await provider.getTransactionReceipt(receipt.hash);
+          const eventValues = eventOf(contract, tx);
+
+          // Extend transaction receipt with event values
+          if(eventValues) {
+            receipt.eventValues = eventValues;
+          }
+          
           return receipt;
         }
 

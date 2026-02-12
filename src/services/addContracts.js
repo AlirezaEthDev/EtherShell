@@ -14,6 +14,7 @@ import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 import { configFile } from './config.js';
 import { createContractProxy } from '../utils/contractProxy.js';
+import { eventOf } from '../utils/event.js';
 
 /**
  * Local storage instance for persisting contract metadata
@@ -124,14 +125,22 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const tx = await provider.getTransaction(deployHash);
         delete tx.data;
 
+        // Get event values
+        const tx1 = await provider.getTransactionReceipt(deployHash);
+        const eventValues = eventOf(contractInstance, tx1);
+
         // Extend transaction object
         tx.ethershellIndex = deployTx.index;
         tx.address = deployTx.target;
         tx.name = deployTx.name;
         tx.chain = deployTx.chain;
         tx.deployType = deployTx.deployType;
+
+        if(eventValues) {
+            tx.eventValues = eventValues;
+        }
         
-        console.log(tx);
+        return tx;
     } catch(err) {
         console.error(err);
     }

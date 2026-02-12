@@ -69,9 +69,9 @@ export function deleteByIndexArr(indices) {
  */
 export async function getAccountInfo(index) {
     if (Array.isArray(index)) {
-        await _getAccArrInfo(index);
+        return await _getAccArrInfo(index);
     } else if (typeof index === 'number') {
-        await _getAccountInfo(index);
+        return await _getAccountInfo(index);
     }
 }
 
@@ -182,7 +182,7 @@ async function _getAccountInfo(_index) {
     accInfo.nonce = await provider.getTransactionCount(accInfo.address);
     accInfo.balance = await provider.getBalance(accInfo.address);
 
-    console.log(accInfo);
+    return accInfo;
 }
 
 /**

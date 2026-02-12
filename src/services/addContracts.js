@@ -230,7 +230,7 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
             provider: newContract.provider
         }
 
-        console.log(result);
+        return result;
     } catch(err) {
         console.error(err);
     }

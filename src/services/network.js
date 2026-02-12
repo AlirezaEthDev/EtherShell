@@ -10,7 +10,8 @@ import {
     currentUrl,
     setCurrentUrl,
     provider,
-    setProvider
+    setProvider,
+    defaultUrl
 } from './config.js';
 
 /**
@@ -33,7 +34,7 @@ export async function set(url){
             chainId: result.chainId
         }    
         changeProvider(currentUrl);
-        console.log(network);
+        return network;
     }catch(err){
         console.error(err);
     }
@@ -55,7 +56,7 @@ export async function get(){
             name: result.name,
             chainId: result.chainId
         }    
-        console.log(network);
+        return network;
     }catch(err){
         console.error(err);
     }
@@ -72,7 +73,7 @@ export function getDefault(){
         const result = {
             URL: defaultUrl
         }
-        console.log(result);
+        return result;
     }catch(err){
         console.error(err);
     }

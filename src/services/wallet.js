@@ -81,7 +81,7 @@ export function addAccounts(privKeyArr) {
         updateWalletJSON(allAccounts);
         newAccObj.index = allAccounts.length - 1;
         accounts.push(newAccObj);
-        console.log(allAccounts[newFrom]);
+        return allAccounts[newFrom];
     }
 
     if(Array.isArray(privKeyArr)){
@@ -99,7 +99,7 @@ export function addAccounts(privKeyArr) {
             accounts.push(newAccObj);
         });
 
-        console.log(allAccounts.slice(newFrom));
+        return allAccounts.slice(newFrom);
     }
     setDefaultAccount(allAccounts[0]);
 }
@@ -144,8 +144,8 @@ export function addHD(phrase, count = 10) {
     }
     updateWalletJSON(allAccounts);
     setDefaultAccount(allAccounts[0]);
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(allAccounts.slice(newFrom));
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    return allAccounts.slice(newFrom);
 }
 
 /**
@@ -174,8 +174,8 @@ export function createAccounts(count = 1) {
     }
     updateWalletJSON(allAccounts);
     setDefaultAccount(allAccounts[0]);
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(allAccounts.slice(newFrom));
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    return allAccounts.slice(newFrom);
 }
 
 /**
@@ -209,8 +209,8 @@ export function createHD(count = 10) {
     }
     updateWalletJSON(allAccounts);
     setDefaultAccount(allAccounts[0]);
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    console.log(allAccounts.slice(newFrom));
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    return allAccounts.slice(newFrom);
 }
 
 /**
@@ -219,7 +219,7 @@ export function createHD(count = 10) {
  * getAllAccounts();
  */
 export function getAllAccounts() {
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     return allAccounts;
 }
 
@@ -229,7 +229,7 @@ export function getAllAccounts() {
  * getAccounts();
  */
 export function getAccounts() {
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     return accounts;
 }
 
@@ -239,7 +239,7 @@ export function getAccounts() {
  * getHDAccounts();
  */
 export function getHDAccounts() {
-    console.log(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
     return hdAccounts;
 }
 
@@ -256,12 +256,12 @@ export function getHDAccounts() {
 export function deleteAccount(accPointer) {
     if(!accPointer && accPointer !== 0) {
         deleteByIndex(null);
-        console.log(allAccounts);
+        return allAccounts;
     }
 
     if(typeof accPointer === 'number') {
         deleteByIndex(accPointer);
-        console.log(allAccounts);
+        return allAccounts;
     }
 
     if(ethers.isAddress(accPointer)) {
@@ -270,12 +270,12 @@ export function deleteAccount(accPointer) {
         if(index !== -1) {
             deleteByIndex(index);
         }
-        console.log(allAccounts);
+        return allAccounts;
     }
 
     if(Array.isArray(accPointer)) {
         deleteByIndexArr(accPointer);
-        console.log(allAccounts);
+        return allAccounts;
     }
 
     if(ethers.Mnemonic.isValidMnemonic(accPointer)) {
@@ -297,7 +297,7 @@ export function deleteAccount(accPointer) {
             deleteByIndex(indicesToDelete[i]);
         }
 
-        console.log(allAccounts);
+        return allAccounts;
         return;
     }
 }
@@ -351,16 +351,16 @@ export async function getWalletInfo(accPointer) {
 
         if(typeof accPointer === 'number') {
             const index = allAccounts.findIndex(wallet => wallet.index == accPointer);
-            await getAccountInfo(index);
+            return await getAccountInfo(index);
         }
 
         if(ethers.isAddress(accPointer)) {
             const index = allAccounts.findIndex(wallet => wallet.address == accPointer);
-            await getAccountInfo(index);
+            return await getAccountInfo(index);
         }
 
         if(Array.isArray(accPointer)) {
-            await getAccountInfo(accPointer);
+            return await getAccountInfo(accPointer);
         }
     
     } catch(err) {

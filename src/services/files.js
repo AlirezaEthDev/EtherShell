@@ -23,17 +23,17 @@ export function deleteDirectory(dirPath){
     }
     // Check if the directory exists
     if(!fs.existsSync(dirPath)){
-      console.log('Path is not a directory');
+      console.info('Path is not a directory');
       return;    
     }
 
     // For Node.js 14.14.0+ (recommended)
     fs.rmSync(dirPath, { recursive: true, force: true });
 
-    console.log('Directory deleted successfully');
+    console.info('Directory deleted successfully');
   } catch (err) {
     if (err.code === 'ENOENT') {
-      console.log('Directory does not exist');
+      console.info('Directory does not exist');
     } else {
       console.error('Error deleting directory:', err);
     }

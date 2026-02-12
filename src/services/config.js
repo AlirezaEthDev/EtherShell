@@ -12,7 +12,7 @@ import { ethers } from 'ethers';
  * Default JSON-RPC URL for local Ethereum node
  * @constant {string}
  */
-const defaultUrl = 'http://127.0.0.1:8545' ;
+export const defaultUrl = 'http://127.0.0.1:8545' ;
 
 /**
  * Currently active network URL
@@ -164,12 +164,12 @@ export function setConfigFile(newConfig) {
  * Gets all fields of config file
  */
 export function getConfigInfo() {
-    console.log(configFile); 
+    return configFile; 
 }
 
 /**
  * Gets just default account of config file
  */
 export function getDefaultAccount() {
-    console.log(configFile.defaultWallet);
+    return configFile.defaultWallet;
 }

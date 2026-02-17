@@ -39,6 +39,7 @@ export async function updateCompiler(version){
     // Update config file
     configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
     fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+
   } catch(err) {
     console.error(err);
   }

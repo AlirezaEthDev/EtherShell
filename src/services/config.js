@@ -96,7 +96,7 @@ if(storedUrl) {
     configFile.providerEndpoint = defaultUrl;
 }
 
-// 3) Set Compiler to Memeory:
+// 3) Set Compiler to Memory:
 // Initialize global configuration of compiler
 if(storedCompConfig){
   configFile.compiler = storedCompConfig.compiler;
@@ -121,6 +121,7 @@ if(storedCompConfig){
   configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
   configFile.compiler.compilePath = compConfig.compilePath;
 }
+
 
 // 4) Set Default Account:
 // Set the default account from stored wallets

@@ -119,12 +119,39 @@ export function createContractProxy(contract, provider, allAccounts) {
     //   };
     // }
     get(target, prop) {
+      // Explicit passthroughs for known non-ABI properties
       if (prop === 'provider') {
         return provider;
       }
+      if (prop === 'target') {
+        return target.target;
+      }
+      if (prop === 'interface') {
+        return target.interface;
+      }
+      if (prop === 'runner') {
+        return target.runner;
+      }
+      if (prop === 'connect') {
+        return target.connect.bind(target);
+      }
 
-      // Pass through non-function properties
-      if (typeof target[prop] !== 'function') {
+      // Allow internal metadata properties to pass through directly
+      if (typeof prop === 'string' && prop.startsWith('contract_')) {
+        return target[prop];
+      }
+  
+      // Check if this prop is a contract ABI function
+      const isContractMethod =
+        target.interface &&
+        typeof prop === 'string' &&
+        (() => {
+          try { target.interface.getFunction(prop); return true; }
+          catch { return false; }
+        })();
+
+      // Pass through non-ABI, non-function properties (e.g. contract_name, contract_index)
+      if (!isContractMethod && typeof target[prop] !== 'function') {
         return target[prop];
       }
 
@@ -166,8 +193,9 @@ export function createContractProxy(contract, provider, allAccounts) {
 
         const options = hasOptions ? args.pop() : null;
 
-        let method = target[prop];
-        let txOptions = {};
+        // Always resolve ABI methods via getFunction to avoid JS built-in property collisions
+        let contractTarget = target;
+        let method;
 
         // Handle 'from' option - switch signer if specified
         if (options && options.from) {
@@ -189,9 +217,15 @@ export function createContractProxy(contract, provider, allAccounts) {
 
           // Create new signer with the specified account
           const newSigner = new ethers.Wallet(account.privateKey, provider);
-          const connectedContract = target.connect(newSigner);
-          method = connectedContract[prop];
+          contractTarget = target.connect(newSigner);
         }
+
+        // Use getFunction for ABI methods to bypass JS name collisions
+        method = isContractMethod
+          ? contractTarget.getFunction(prop)
+          : contractTarget[prop];
+          
+        let txOptions = {};
 
         // Build transaction options object with all supported ethers.js v6 options
         if (options) {
@@ -253,7 +287,7 @@ export function createContractProxy(contract, provider, allAccounts) {
         }
 
         // Call the method with remaining args and tx options
-        const result = await method.apply(method, args);
+        const result = await method(...args);
 
         // Check if result is a transaction response (has wait method)
         if (result && typeof result.wait === 'function') {

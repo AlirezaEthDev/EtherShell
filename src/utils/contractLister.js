@@ -22,12 +22,12 @@ export async function getContArr() {
 
     for (const x of contracts.values()) {
         let contract = {
-            index: x.index,
-            name: x.contractName,
+            index: x.contract_index,
+            name: x.contract_name,
             address: x.target,
-            chain: x.chain,
-            chainId: x.chainId,
-            deployType: x.deployType,
+            chain: x.contract_chain,
+            chainId: x.contract_chainId,
+            deployType: x.contract_deployType,
             balance: await x.provider.getBalance(x.target)
         }
         contractsArray.push(contract);

@@ -110,12 +110,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
 
-        proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.contractName = contractName;
-        proxiedContract.chain = connectedChain.name;
-        proxiedContract.chainId = connectedChain.chainId;
-        proxiedContract.deployType = 'ethershell-deployed';
-        proxiedContract.provider = currentProvider;
+        proxiedContract.contract_index = Array.from(contracts.values()).length;
+        proxiedContract.contract_name = contractName;
+        proxiedContract.contract_chain = connectedChain.name;
+        proxiedContract.contract_chainId = connectedChain.chainId;
+        proxiedContract.contract_deployType = 'ethershell-deployed';
+        proxiedContract.contract_provider = currentProvider;
 
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;
@@ -193,12 +193,12 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
 
-        proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.contractName = contractName;
-        proxiedContract.chain = connectedChain.name;
-        proxiedContract.chainId = connectedChain.chainId;
-        proxiedContract.deployType = 'ethershell-deployed';
-        proxiedContract.provider = currentProvider;
+        proxiedContract.contract_index = Array.from(contracts.values()).length;
+        proxiedContract.contract_name = contractName;
+        proxiedContract.contract_chain = connectedChain.name;
+        proxiedContract.contract_chainId = connectedChain.chainId;
+        proxiedContract.contract_deployType = 'ethershell-deployed';
+        proxiedContract.contract_provider = currentProvider;
 
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;

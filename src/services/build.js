@@ -150,9 +150,6 @@ export function compile(fullPath, selectedContracts, buildPath){
       if(!solFiles.length){
         throw 'There is no smart contract in the directory!';
       } else {
-        // for(let i = 0; i < solFiles.length; i++){
-        //   build(solFiles[i], selectedContracts, buildPath);
-        // }
         solFiles.forEach((solFile) => {
           const contractAbis = build(solFile, selectedContracts, buildPath);
           // merge returned ABIs into aggregatedAbis
@@ -184,6 +181,8 @@ export function compile(fullPath, selectedContracts, buildPath){
     const typesOutputPath = path.join(buildPath, 'types');
     generateAllTypes(buildPath, typesOutputPath);
     console.log(`TypeScript types generated in ${path.resolve(typesOutputPath)}`);
+
+    console.log(`Standard JSON Input generated in ${path.resolve(buildPath, 'standard-json')}`);
   } catch(err){
       console.error(err);
   }

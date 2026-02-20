@@ -82,15 +82,15 @@ export function build(fullPath, selectedContracts, buildPath){
   // Get the directory containing the contract
   const contractDir = path.dirname(fullPath);
   const filename = path.basename(fullPath, '.sol');
-  const source = fs.readFileSync(fullPath, 'utf8');
+  // const source = fs.readFileSync(fullPath, 'utf8');
+
+  // Start collecting from the main contract
+  let allSources = {}
+  _collectSources(fullPath, allSources);
   
   const input = {
     language: 'Solidity',
-    sources: {
-      [`${filename}`]: {
-        content: source,
-      },
-    },
+    sources: allSources,
     settings: {
       outputSelection: {
         '*': {
@@ -111,12 +111,9 @@ export function build(fullPath, selectedContracts, buildPath){
     input.settings.viaIR = true;
   }
 
-  // Compile with import callback
+  // Compile without import callback
   const output = JSON.parse(
-    solc.compile(
-      JSON.stringify(input),
-      { import: (importPath) => findImports(importPath, contractDir) }
-    )
+    solc.compile(JSON.stringify(input))
   );
 
   if(output.errors) {
@@ -126,22 +123,37 @@ export function build(fullPath, selectedContracts, buildPath){
       throw errors;
     }
   }
-
+  
   // Generate sub-paths of build
   const artifacts = path.join(buildPath, 'artifacts');
   const abis = path.join(buildPath, 'abis');
   const bytecode = path.join(buildPath, 'bytecode');
   const metadata = path.join(buildPath, 'metadata');
+  const standardJsonDir = path.join(buildPath, 'standard-json');
   const subPaths = [
       artifacts,
       abis,
       bytecode,
-      metadata
+      metadata,
+      standardJsonDir
   ];
+  subPaths.forEach(check);
+
+  // Save standard JSON input on standard-json
+  const jsonInputPath = path.join(standardJsonDir, `${filename}.standard.json`);
+  fs.writeFileSync(jsonInputPath, JSON.stringify(input, null, 2));
+
+  // Determine the correct key for the main contract in the output
+  const mainContractPath = path.relative(path.resolve('.'), path.resolve(fullPath)).split(path.sep).join('/');;
+  const contractsInFile = output.contracts[mainContractPath];
+
+  if (!contractsInFile) {
+    throw new Error(`Could not find compiled output for ${mainContractPath}`);
+  }
 
   // Ensure all sub-paths exist
   subPaths.forEach(check);
-  const allContracts = Object.keys(output.contracts[`${filename}`]);
+  const allContracts = Object.keys(contractsInFile);
   const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
     (contractName) => {
       return selectedContracts.includes(contractName);
@@ -149,7 +161,7 @@ export function build(fullPath, selectedContracts, buildPath){
   ): allContracts;
   const resultAbis = {}; // Collect ABIs to return
   contractsToSave.forEach((contractName) => {
-    const contractsData = output.contracts[`${filename}`][contractName];
+    const contractsData = contractsInFile[contractName];
     // Save on artifacts
     const artifactsPath = path.join(artifacts, `${contractName}.json`);
     fs.writeFileSync(artifactsPath, JSON.stringify(contractsData, null, 2));
@@ -162,6 +174,7 @@ export function build(fullPath, selectedContracts, buildPath){
     // Save on metadata
     const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
     fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+
     // Store abis and bytecode on local storage
     localStorage.setItem(`${contractName}_abi`, abisPath);
     localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
@@ -190,4 +203,31 @@ export function extractLoadableVersion(fullVersion) {
     throw new Error(`Unable to extract version from: ${fullVersion}`);
   }
   return `v${match[1]}+commit.${match[2]}`;
+}
+
+/**
+* Helper to recursively collect all imports into the sources object
+*/
+function _collectSources(filePath, allSourcesObj) {
+  const absolutePath = path.resolve(filePath);
+  
+  // 1. Force POSIX style (forward slashes) for the map key
+  let relativePath = path.relative(path.resolve('.'), absolutePath);
+  relativePath = relativePath.split(path.sep).join('/'); 
+  
+  if (allSourcesObj[relativePath]) return allSourcesObj;
+
+  const content = fs.readFileSync(absolutePath, 'utf8');
+  allSourcesObj[relativePath] = { content };
+
+  // 2. Resolve imports and recurse
+  const importRegex = /import\s+(?:\{[^}]*\}\s+from\s+)?['"]([^'"]+)['"]/g;
+  let match;
+  while ((match = importRegex.exec(content)) !== null) {
+    const importPath = match[1];
+    const resolvedImportPath = path.resolve(path.dirname(absolutePath), importPath);
+    _collectSources(resolvedImportPath, allSourcesObj);
+  }
+
+  return allSourcesObj;
 }

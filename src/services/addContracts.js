@@ -8,11 +8,13 @@
 
 import { ethers } from 'ethers';
 import fs from 'fs';
-import { provider } from './config.js';
+import { 
+    provider,
+    configFile
+ } from './configSync.js';
 import { allAccounts } from './wallet.js';
 import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
-import { configFile } from './config.js';
 import { createContractProxy } from '../utils/contractProxy.js';
 import { eventOf } from '../utils/event.js';
 

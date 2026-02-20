@@ -37,7 +37,7 @@ import {
 
 import { deploy, add } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
-import { getConfigInfo, getDefaultAccount } from '../src/services/config.js';
+import { getConfigInfo, getDefaultAccount } from '../src/services/configSync.js';
 
 /**
  * REPL instance for EtherShell interactive environment

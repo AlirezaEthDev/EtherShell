@@ -6,9 +6,9 @@
  */
 
 import { allAccounts, accounts, hdAccounts } from '../services/wallet.js';
-import { provider } from '../services/config.js';
+import { provider } from '../services/configSync.js';
 import fs from 'fs';
-import { configFile, configPath } from '../services/config.js';
+import { configFile, configPath } from '../services/configSync.js';
 import { serializeBigInts } from './serialize.js';
 
 /**

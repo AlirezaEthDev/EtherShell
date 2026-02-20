@@ -7,7 +7,7 @@
  */
 
 import { ethers } from 'ethers';
-import { provider } from './config.js';
+import { provider } from './configSync.js';
 import { 
     deleteByIndex, 
     deleteByIndexArr, 

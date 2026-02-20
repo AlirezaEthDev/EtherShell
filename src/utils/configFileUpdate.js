@@ -1,7 +1,7 @@
 import {
     configFile,
     configPath
-} from '../services/config.js';
+} from '../services/configSync.js';
 import fs from 'fs';
 
 export function changeProvider(url) {

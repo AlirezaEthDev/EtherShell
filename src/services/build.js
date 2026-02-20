@@ -20,7 +20,7 @@ import {
   configPath,
   configFile,
   compConfig
-} from './config.js';
+} from './configSync.js';
 
 /**
  * Update the Solidity compiler to a specific version

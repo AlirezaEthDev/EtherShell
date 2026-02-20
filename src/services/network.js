@@ -12,7 +12,7 @@ import {
     provider,
     setProvider,
     defaultUrl
-} from './config.js';
+} from './configSync.js';
 
 /**
  * Set a new network provider

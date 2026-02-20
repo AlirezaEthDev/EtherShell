@@ -133,6 +133,9 @@ export function compile(fullPath, selectedContracts, buildPath){
       [buildPath].forEach(check);
     }
 
+    // Aggregated ABI container: { [contractName]: abiArray }
+    const aggregatedAbis = {};
+
     let fileExt;
     if(!fullPath) {
       fullPath = path.resolve('.', 'contracts');
@@ -141,20 +144,41 @@ export function compile(fullPath, selectedContracts, buildPath){
     }
 
     if(!fileExt){
+      // Directory: collect .sol files and compile each
       const solFiles = collectSolFiles(fullPath);
       
       if(!solFiles.length){
         throw 'There is no smart contract in the directory!';
       } else {
-        for(let i = 0; i < solFiles.length; i++){
-          build(solFiles[i], selectedContracts, buildPath);
-        }
+        // for(let i = 0; i < solFiles.length; i++){
+        //   build(solFiles[i], selectedContracts, buildPath);
+        // }
+        solFiles.forEach((solFile) => {
+          const contractAbis = build(solFile, selectedContracts, buildPath);
+          // merge returned ABIs into aggregatedAbis
+          Object.assign(aggregatedAbis, contractAbis);
+        })
         console.log(`Contracts compiled into ${path.resolve(buildPath)}`);
       }
     } else {
-      build(fullPath, selectedContracts, buildPath);
+      // Single file
+      const contractAbis = build(fullPath, selectedContracts, buildPath);
+      // merge returned ABIs into aggregatedAbis
+      Object.assign(aggregatedAbis, contractAbis);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
+
+    // Write aggregated ABI file
+    const abisDir = path.join(buildPath, 'abis');
+    check(abisDir); // ensure dir exists (same util as builder.js)
+    const aggregatedAbiPath = path.join(abisDir, 'aggregated.abi.json');
+
+    // aggregatedAbis is { ContractName: abiArray }
+    const flatAbi = Object.values(aggregatedAbis).flat();
+
+    // Format: { "ContractName": [ ...abi... ], ... }
+    fs.writeFileSync(aggregatedAbiPath, JSON.stringify(flatAbi, null, 2));
+    console.log('Aggregated ABI written to', path.resolve(aggregatedAbiPath));
 
     // Generate TypeScript types
     const typesOutputPath = path.join(buildPath, 'types');

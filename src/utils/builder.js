@@ -147,6 +147,7 @@ export function build(fullPath, selectedContracts, buildPath){
       return selectedContracts.includes(contractName);
     }
   ): allContracts;
+  const resultAbis = {}; // Collect ABIs to return
   contractsToSave.forEach((contractName) => {
     const contractsData = output.contracts[`${filename}`][contractName];
     // Save on artifacts
@@ -164,7 +165,15 @@ export function build(fullPath, selectedContracts, buildPath){
     // Store abis and bytecode on local storage
     localStorage.setItem(`${contractName}_abi`, abisPath);
     localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
+
+    // Save ABI
+    const abi = contractsData.abi || [];
+    // Collect ABI in memory
+    resultAbis[contractName] = abi;
   });
+
+  // Return map of contractName -> abi
+  return resultAbis;
 }
 
 /**

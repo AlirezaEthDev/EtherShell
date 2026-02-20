@@ -23,7 +23,7 @@ export async function getContArr() {
     for (const x of contracts.values()) {
         let contract = {
             index: x.index,
-            name: x.name,
+            name: x.contractName,
             address: x.target,
             chain: x.chain,
             chainId: x.chainId,

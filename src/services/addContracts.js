@@ -111,7 +111,7 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
 
         proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.name = contractName;
+        proxiedContract.contractName = contractName;
         proxiedContract.chain = connectedChain.name;
         proxiedContract.chainId = connectedChain.chainId;
         proxiedContract.deployType = 'ethershell-deployed';
@@ -194,7 +194,7 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
 
         proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.name = contractName;
+        proxiedContract.contractName = contractName;
         proxiedContract.chain = connectedChain.name;
         proxiedContract.chainId = connectedChain.chainId;
         proxiedContract.deployType = 'ethershell-deployed';

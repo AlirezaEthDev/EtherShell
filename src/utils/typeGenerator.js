@@ -49,7 +49,7 @@ export function generateAllTypes(buildPath, typesOutputPath = './src/types') {
       throw new Error(`ABIs directory not found at ${abisPath}`);
     }
 
-    const abiFiles = fs.readdirSync(abisPath).filter(f => f.endsWith('.abi.json'));
+    const abiFiles = fs.readdirSync(abisPath).filter(f => f.endsWith('.abi.json') && f !== 'aggregated.abi.json');
     const generatedFiles = [];
 
     abiFiles.forEach(file => {

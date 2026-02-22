@@ -17,7 +17,8 @@ import {
     compilerOptions,
     getCompilerOptions,
     compile,
-    changeCompPath
+    changeCompPath,
+    flatten
 } from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
@@ -66,6 +67,7 @@ r.context.compInfo = getCompilerOptions;
 r.context.compOpts = compilerOptions;
 r.context.compPath = changeCompPath;
 r.context.build = compile;
+r.context.flatten = flatten;
 
 // Config commands
 r.context.configInfo = getConfigInfo;

@@ -81,32 +81,32 @@ export function build(fullPath, selectedContracts, buildPath){
   
   // Get the directory containing the contract
   const contractDir = path.dirname(fullPath);
-  const filename = path.basename(fullPath, '.sol');
-  const source = fs.readFileSync(fullPath, 'utf8');
-  
+  const filename = path.basename(fullPath);        // keep extension here
+  const basename = path.basename(fullPath, '.sol');
+
+  // Build full standard JSON input, including all imports
+  const sources = collectSourcesForStandardJson(fullPath, filename);
+
   const input = {
     language: 'Solidity',
-    sources: {
-      [`${filename}`]: {
-        content: source,
-      },
-    },
+    sources,
     settings: {
       outputSelection: {
         '*': {
           '*': ['*'],
         },
       },
-    }
+    },
   };
 
   // Apply global compiler configuration
   if (compilerConfig.optimizer) {
     input.settings.optimizer = {
       enabled: true,
-      runs: compilerConfig.optimizerRuns
+      runs: compilerConfig.optimizerRuns,
     };
   }
+
   if (compilerConfig.viaIR) {
     input.settings.viaIR = true;
   }
@@ -127,16 +127,20 @@ export function build(fullPath, selectedContracts, buildPath){
     }
   }
 
+
+
   // Generate sub-paths of build
-  const artifacts = path.join(buildPath, 'artifacts');
-  const abis = path.join(buildPath, 'abis');
-  const bytecode = path.join(buildPath, 'bytecode');
-  const metadata = path.join(buildPath, 'metadata');
+const artifacts = path.join(buildPath, 'artifacts');
+const abis = path.join(buildPath, 'abis');
+const bytecode = path.join(buildPath, 'bytecode');
+const metadata = path.join(buildPath, 'metadata');
+const standardJsonDir = path.join(buildPath, 'standard-json');
   const subPaths = [
       artifacts,
       abis,
       bytecode,
-      metadata
+      metadata,
+      standardJsonDir
   ];
 
   // Ensure all sub-paths exist
@@ -161,6 +165,9 @@ export function build(fullPath, selectedContracts, buildPath){
     // Save on metadata
     const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
     fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+    // Save standard JSON input for this entry file
+    const standardJsonPath = path.join(standardJsonDir,`${basename}.standard-input.json`);
+    fs.writeFileSync(standardJsonPath, JSON.stringify(input, null, 2));
     // Store abis and bytecode on local storage
     localStorage.setItem(`${contractName}_abi`, abisPath);
     localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
@@ -182,3 +189,50 @@ export function extractLoadableVersion(fullVersion) {
   }
   return `v${match[1]}+commit.${match[2]}`;
 }
+
+/*=========================== HELPER =============================*/
+function resolveImportPath(importPath, fromDir) {
+  if (importPath.startsWith('./') || importPath.startsWith('../')) {
+    return path.resolve(fromDir, importPath);
+  }
+
+  // Node-style import, resolve from node_modules
+  // e.g. '@openzeppelin/contracts/token/ERC20/ERC20.sol'
+  return path.resolve(process.cwd(), 'node_modules', importPath);
+}
+
+function collectSourcesForStandardJson(entryPath, logicalEntryName) {
+  const visited = new Set();
+  const sources = {};
+
+  function processFile(absPath, logicalName) {
+    if (visited.has(absPath)) return;
+    visited.add(absPath);
+
+    if (!fs.existsSync(absPath)) {
+      console.warn(`Warning: cannot resolve import "${logicalName}" at path "${absPath}"`);
+      return;
+    }
+
+    const content = fs.readFileSync(absPath, 'utf8');
+    sources[logicalName] = { content };
+
+    const importRegex =
+      /import\s+(?:(?:["']([^"']+)["'])|(?:.*?\sfrom\s+["']([^"']+)["']))\s*;/g;
+
+    let match;
+    while ((match = importRegex.exec(content))) {
+      const importPath = match[1] || match[2];
+      if (!importPath) continue;
+
+      const resolved = resolveImportPath(importPath, path.dirname(absPath));
+      // Use the import string itself as the logical source key,
+      // which is what solc/Etherscan expect
+      processFile(resolved, importPath);
+    }
+  }
+
+  processFile(entryPath, logicalEntryName);
+  return sources;
+}
+

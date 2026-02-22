@@ -156,6 +156,37 @@ export function compile(fullPath, selectedContracts, buildPath){
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
 
+////////////////////
+  // Generate aggregated ABI after compilation
+  const abisDir = path.join(buildPath, 'abis');
+  const aggregatedAbiPath = path.join(buildPath, 'aggregated.abi.json');
+
+  if (fs.existsSync(abisDir)) {
+    const files = fs.readdirSync(abisDir).filter(f => f.endsWith('.abi.json'));
+
+    const aggregated = [];
+    for (const file of files) {
+      const p = path.join(abisDir, file);
+      try {
+        const abi = JSON.parse(fs.readFileSync(p, 'utf8'));
+        if (Array.isArray(abi)) {
+          aggregated.push(...abi);
+        } else {
+          console.warn(`ABI file ${file} is not an array, skipping from aggregation`);
+        }
+      } catch (e) {
+        console.warn(`Failed to read ABI file ${file} for aggregation: ${e.message}`);
+      }
+    }
+
+    fs.writeFileSync(aggregatedAbiPath, JSON.stringify(aggregated, null, 2));
+    console.log('Aggregated ABI generated at', path.resolve(aggregatedAbiPath));
+  } else {
+    console.warn('No ABI directory found, aggregated ABI not generated.');
+  }
+
+////////////////////
+
     // Generate TypeScript types
     const typesOutputPath = path.join(buildPath, 'types');
     generateAllTypes(buildPath, typesOutputPath);
@@ -173,4 +204,114 @@ export function changeCompPath(newPath) {
   compConfig.compilePath = newPath;
   configFile.compiler.compilePath = compConfig.compilePath;
   fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+}
+
+/**
+ * Flatten a Solidity contract and its imports into a single file.
+ *
+ * @param {string} fullPath - Path to the root .sol file.
+ * @param {string} [outFile] - Optional path for the flattened output file.
+ *                             Defaults to `<dir>/<name>.flattened.sol`.
+ */
+export function flatten(fullPath, outFile) {
+  if (!fullPath) {
+    throw new Error('flatten(): fullPath to the root Solidity file is required.');
+  }
+
+  const entryPath = path.resolve(fullPath);
+  if (!fs.existsSync(entryPath)) {
+    throw new Error(`flatten(): entry file does not exist: ${entryPath}`);
+  }
+
+  const visited = new Set();
+  const pieces = [];
+
+  let pragmaLine = null;
+  let hasSpdx = false;
+
+  function processFile(absPath, logicalName) {
+    if (visited.has(absPath)) return;
+    visited.add(absPath);
+
+    const raw = fs.readFileSync(absPath, 'utf8');
+
+    const lines = raw.split(/\r?\n/);
+
+    // Capture pragma and SPDX once from the entry or first file
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!pragmaLine && trimmed.startsWith('pragma solidity')) {
+        pragmaLine = trimmed.replace(/[; ]+$/, ';');
+      }
+      if (!hasSpdx && trimmed.startsWith('// SPDX-License-Identifier:')) {
+        hasSpdx = true;
+      }
+    }
+
+    const imports = parseImports(raw);
+    for (const importPath of imports) {
+      const resolved = resolveImportPath(importPath, path.dirname(absPath));
+      processFile(resolved, importPath);
+    }
+
+    // Strip SPDX, pragma, and import lines from the body
+    const body = lines
+      .filter((line) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('// SPDX-License-Identifier:')) return false;
+        if (trimmed.startsWith('pragma solidity')) return false;
+        if (trimmed.startsWith('import ')) return false;
+        return true;
+      })
+      .join('\n');
+
+    pieces.push(`\n\n// File: ${logicalName}\n\n${body}\n`);
+  }
+
+  const logicalName = path.basename(entryPath);
+  processFile(entryPath, logicalName);
+
+  let header = '';
+  if (hasSpdx) {
+    // Multiple different licenses may be mixed; explicit about it
+    header += '// SPDX-License-Identifier: MIXED\n';
+  }
+  if (pragmaLine) {
+    header += `${pragmaLine}\n\n`;
+  }
+
+  const flattened = `${header}${pieces.join('')}`;
+
+  const defaultOut =
+    outFile ||
+    path.join(
+      path.dirname(entryPath),
+      `${path.basename(entryPath, '.sol')}.flattened.sol`,
+    );
+
+  fs.writeFileSync(defaultOut, flattened);
+  console.log('Flattened contract written to', path.resolve(defaultOut));
+}
+
+/*============================= HELPER ==============================*/
+// --- FLATTENING UTILITIES ---
+
+function resolveImportPath(importPath, fromDir) {
+  if (importPath.startsWith('./') || importPath.startsWith('../')) {
+    return path.resolve(fromDir, importPath);
+  }
+  // Node-style imports from node_modules
+  return path.resolve(process.cwd(), 'node_modules', importPath);
+}
+
+function parseImports(content) {
+  const imports = [];
+  const importRegex =
+    /import\s+(?:(?:["']([^"']+)["'])|(?:.*?\sfrom\s+["']([^"']+)["']))\s*;/g;
+  let match;
+  while ((match = importRegex.exec(content))) {
+    const importPath = match[1] || match[2];
+    if (importPath) imports.push(importPath);
+  }
+  return imports;
 }

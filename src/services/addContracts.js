@@ -92,13 +92,13 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
 
         allAccounts[accIndex].contracts.push(contSpec);
 
-        // Extend contract object
-        deployTx.index = Array.from(contracts.values()).length;
-        deployTx.name = contractName;
-        deployTx.chain = connectedChain.name;
-        deployTx.chainId = connectedChain.chainId;
-        deployTx.deployType = 'ethershell-deployed',
-        deployTx.provider = currentProvider;
+        // Decorate contract instance with metadata
+        deployTx._contractIndex = Array.from(contracts.values()).length;
+        deployTx._contractName = contractName;
+        deployTx._contractChain = connectedChain.name;
+        deployTx._contractChainId = connectedChain.chainId;
+        deployTx._contractDeployType = 'ethershell-deployed',
+        deployTx._contractProvider = currentProvider;
 
         //////////////////////////////////
 
@@ -110,12 +110,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
 
-        proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.name = contractName;
-        proxiedContract.chain = connectedChain.name;
-        proxiedContract.chainId = connectedChain.chainId;
-        proxiedContract.deployType = 'ethershell-deployed';
-        proxiedContract.provider = currentProvider;
+        proxiedContract._contractIndex = Array.from(contracts.values()).length;
+        proxiedContract._contractName = contractName;
+        proxiedContract._contractChain = connectedChain.name;
+        proxiedContract._contractChainId = connectedChain.chainId;
+        proxiedContract._contractDeployType = 'ethershell-deployed';
+        proxiedContract._contractProvider = currentProvider;
 
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;
@@ -131,12 +131,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         const tx1 = await provider.getTransactionReceipt(deployHash);
         const eventValues = eventOf(contractInstance, tx1);
 
-        // Extend transaction object
-        tx.ethershellIndex = deployTx.index;
+        // Decorate transaction object with metadata
+        tx.ethershellIndex = deployTx._contractIndex;
         tx.address = deployTx.target;
-        tx.name = deployTx.name;
-        tx.chain = deployTx.chain;
-        tx.deployType = deployTx.deployType;
+        tx.name = deployTx._contractName;
+        tx.chain = deployTx._contractChain;
+        tx.deployType = deployTx._contractDeployType;
 
         if(eventValues) {
             tx.eventValues = eventValues;
@@ -193,12 +193,12 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(newContract, currentProvider, allAccounts);
 
-        proxiedContract.index = Array.from(contracts.values()).length;
-        proxiedContract.name = contractName;
-        proxiedContract.chain = connectedChain.name;
-        proxiedContract.chainId = connectedChain.chainId;
-        proxiedContract.deployType = 'ethershell-deployed';
-        proxiedContract.provider = currentProvider;
+        proxiedContract._contractIndex = Array.from(contracts.values()).length;
+        proxiedContract._contractName = contractName;
+        proxiedContract._contractChain = connectedChain.name;
+        proxiedContract._contractChainId = connectedChain.chainId;
+        proxiedContract._contractDeployType = 'ethershell-deployed';
+        proxiedContract._contractProvider = currentProvider;
 
         // Add to REPL context with proxy
         r.context[contractName] = proxiedContract;
@@ -213,23 +213,23 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
 
         allAccounts[accIndex].contracts.push(contSpec);
 
-        // Extend contract object
-        newContract.index = Array.from(contracts.values()).length;
-        newContract.name = contractName;
-        newContract.chain = connectedChain.name;
-        newContract.chainId = connectedChain.chainId;
-        newContract.deployType = 'pre-deployed',
-        newContract.provider = currentProvider;
+        // Decorate contract instance with metadata
+        newContract._contractIndex = Array.from(contracts.values()).length;
+        newContract._contractName = contractName;
+        newContract._contractChain = connectedChain.name;
+        newContract._contractChainId = connectedChain.chainId;
+        newContract._contractDeployType = 'pre-deployed',
+        newContract._contractProvider = currentProvider;
 
         // Add result
         const result = {
-            index: newContract.index,
-            name: newContract.name,
+            index: newContract._contractIndex,
+            name: newContract._contractName,
             address: newContract.target,
-            chain: newContract.chain,
-            chainId: newContract.chainId,
-            deployType: newContract.deployType,
-            provider: newContract.provider
+            chain: newContract._contractChain,
+            chainId: newContract._contractChainId,
+            deployType: newContract._contractDeployType,
+            provider: newContract._contractProvider
         }
 
         return result;

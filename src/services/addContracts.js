@@ -35,6 +35,27 @@ const localStorage = new LocalStorage('./ethershell');
 export const contracts = getContractJSON();
 
 /**
+ * Instantiate stored contracts to interact with the shell
+ */
+export async function restore() {
+    if(contracts) {
+        console.info(`Stored contracts instantiating ...`);
+        for(let i = 0; i < contracts.length; i++) {
+            await add(
+                contracts[i].name,
+                contracts[i].address,
+                configFile.defaultWallet.index,
+                contracts[i].abiPath
+            );
+        }
+        console.info(`All cached contracts instantiated!`);
+    } else {
+        return `The storage is empty!`;
+    }
+}
+
+
+/**
  * Deploy a new smart contract to the blockchain
  * @async
  * @param {string} contractName - Name of the contract to deploy

@@ -36,7 +36,7 @@ import {
     changeDefaultAccount
     } from '../src/services/wallet.js';
 
-import { deploy, add } from '../src/services/addContracts.js';
+import { deploy, add, restore } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 import { getConfigInfo, getDefaultAccount } from '../src/services/configSync.js';
 
@@ -97,3 +97,4 @@ r.context.addContract = add;
 
 // Contract
 r.context.contracts = getContracts;
+r.context.restoreContract = restore;

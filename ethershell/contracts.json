@@ -18,5 +18,245 @@
     "deployType": "ethershell-deployed",
     "balance": "0",
     "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 2,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 3,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 4,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 5,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 6,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 7,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 8,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 9,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 10,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 11,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 12,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 13,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 14,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 15,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 16,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 17,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 18,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 19,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 20,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 21,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  },
+  {
+    "index": 22,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 23,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 24,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 25,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
   }
 ]

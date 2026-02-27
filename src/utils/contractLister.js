@@ -6,6 +6,14 @@
  */
 
 import { contracts } from '../services/addContracts.js';
+import fs from 'fs';
+import { serializeBigInts } from './serialize.js'
+import { provider } from '../services/configSync.js';
+
+/**
+ * 
+ */
+const contractJSONPath = './ethershell/contracts.json';
 
 /**
  * Get array of all contracts with their information
@@ -20,18 +28,54 @@ import { contracts } from '../services/addContracts.js';
 export async function getContArr() {
     let contractsArray = [];
 
-    for (const x of contracts.values()) {
-        let contract = {
-            index: x._contractIndex,
-            name: x._contractName,
-            address: x.target,
-            chain: x._contractChain,
-            chainId: x._contractChainId,
-            deployType: x._contractDeployType,
-            balance: await x.provider.getBalance(x.target)
-        }
-        contractsArray.push(contract);
+    for (const x of contracts) {
+        const balance = await provider.getBalance(x.address);
+
+        contractsArray.push({
+            index: x.index,
+            name: x.name,
+            address: x.address,
+            chain: x.chain,
+            chainId: x.chainId,
+            deployType: x.deployType,
+            balance,
+            abiPath: x.abiPath
+        });
     }
 
     return contractsArray;
+}
+
+/**
+ * Writes/Updates contracts json file
+ * @param {Array<string>} contractArr - Contract array
+ * @example
+ * updateContractJSON([{
+                ...
+        }]);
+ */
+export function updateContractJSON(contractArr) {
+    const contractObj = serializeBigInts(contractArr);
+    fs.writeFileSync(contractJSONPath, JSON.stringify(contractObj, null, 2));
+}
+
+/**
+ * Returns pre-added/deployed contracts' objects from saved json file
+ * @returns {Object}
+ */
+export function getContractJSON(){
+    if(fs.existsSync(contractJSONPath)){
+        const contractJSON = fs.readFileSync(contractJSONPath, 'utf8');
+        // Return empty array if contratcs.json is empty
+        if(contractJSON.length === 0) {
+            return [];
+        } else {
+            return JSON.parse(fs.readFileSync(contractJSONPath));
+        }
+    } else {
+        // Generate empty contracts.json if it doesn't exist
+        const fd = fs.openSync(contractJSONPath, 'w');
+        fs.closeSync(fd);
+        return [];
+    }
 }

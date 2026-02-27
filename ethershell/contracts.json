@@ -1,0 +1,22 @@
+[
+  {
+    "index": 0,
+    "name": "ERC20",
+    "address": "0x7EfdE6a38E36Fe5CB2a302d9685e9F0d990E192a",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "build\\abis\\ERC20.abi.json"
+  },
+  {
+    "index": 1,
+    "name": "MainContext",
+    "address": "0xa952ccb1308F065610814418138db0Fc39B4A7ca",
+    "chain": "unknown",
+    "chainId": "14601",
+    "deployType": "ethershell-deployed",
+    "balance": "0",
+    "abiPath": "./build/abis/MainContext.abi.json"
+  }
+]

@@ -1,11 +1,12 @@
 import { 
     loadSolcVersion, 
-    extractLoadableVersion 
+    extractLoadableVersion
 } from '../utils/builder.js';
 import { allAccounts } from './wallet.js';
 import { serializeBigInts } from '../utils/serialize.js';
 import fs from 'fs';
 import { ethers } from 'ethers';
+import solc from 'solc';
 
 // Sync Config Memory with Storage Config:
 /**
@@ -98,7 +99,8 @@ if(storedUrl) {
 
 // 3) Set Compiler to Memory:
 // Initialize global configuration of compiler
-if(storedCompConfig){
+// if(storedCompConfig){
+if(false){
   configFile.compiler = storedCompConfig.compiler;
   console.info(`Compiler is loading ...`);
   compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);

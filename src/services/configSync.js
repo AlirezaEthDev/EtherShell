@@ -73,20 +73,22 @@ let storedCompConfig;
 let configObj;
 
 // 1) Load config file
-if(!fs.existsSync(configPath)){
-  storedCompConfig = null;
-} else {
-    configObj = JSON.parse(fs.readFileSync(configPath));
-    storedCompConfig = configObj;
-}
-
-// 2) Set Provider to Memory:
-// Initialize provider with default URL
 /**
  * The specific RPC endpoint URL saved on storage before.
  * @type {string}
  */
-const storedUrl = configObj.providerEndpoint;
+let storedUrl;
+if(!fs.existsSync(configPath)){
+  storedCompConfig = null;
+  storedUrl = null;
+} else {
+    configObj = JSON.parse(fs.readFileSync(configPath));
+    storedCompConfig = configObj;
+    storedUrl = configObj.providerEndpoint;
+}
+
+// 2) Set Provider to Memory:
+// Initialize provider with default URL
 if(storedUrl) {
     provider = new ethers.JsonRpcProvider(storedUrl);
     currentUrl = storedUrl;

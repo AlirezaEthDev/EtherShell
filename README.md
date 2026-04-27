@@ -13,19 +13,19 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 
 ## ✨ Features
 
-- **Interactive REPL Shell** - Built-in async support for all commands with custom evaluation
-- **Solidity Compilation** - Compile contracts with configurable optimization and viaIR mode
-- **Smart Contract Deployment** - Deploy contracts to any EVM network
-- **Wallet Management** - Create, import, and manage wallets (regular & HD wallets, node-managed accounts)
-- **Multi-Network Support** - Switch between different blockchain networks with persistent configuration
-- **Contract Proxy Wrapper** - Enhanced contract interaction with flexible transaction options (from, value, gasLimit, maxFeePerGas, etc.)
-- **Contract Interactions** - Call contract methods with advanced options directly from the shell
-- **ABI & Bytecode Generation** - Organized artifact output with metadata
-- **Node Signer Integration** - Connect to node-managed accounts (Ganache, Hardhat)
-- **TypeScript Code Generation** - Auto-generate TypeScript types from contract ABIs
-- **Gas Optimization** - Configure compiler optimization levels and viaIR code generation
-- **Persistent Configuration** - Save and restore network, compiler, and wallet settings
-- **Comprehensive JSDoc** - Full IDE autocomplete and type hints
+- **Interactive REPL Shell** – Custom async evaluation with top‑level `await` support in a Node.js REPL.
+- **Solidity Compilation** – Compile contracts with configurable optimization and `viaIR` options.
+- **Smart Contract Deployment** – Deploy contracts to any EVM network using ethers v6.
+- **Wallet Management** – Create, import, and manage wallets (regular & HD wallets, plus node‑managed accounts).
+- **Multi‑Network Support** – Switch between blockchain networks with persistent provider configuration.
+- **Contract Proxy Wrapper** – Enhanced contract interaction with a proxy that supports `from`, `value`, gas options, EIP‑1559 fields, and custom data.
+- **Contract Interactions** – Call contract methods (read & write) with advanced options directly from the shell.
+- **ABI & Bytecode Generation** – Organized artifacts (`artifacts`, `abis`, `bytecode`, `metadata`) plus an aggregated ABI file.
+- **Node Signer Integration** – Connect to node‑managed accounts (Hardhat, Anvil, etc.).
+- **TypeScript Code Generation** – Auto‑generate TypeScript types from ABIs into a `types/` directory under the build path.
+- **Gas Optimization Controls** – Configure optimizer enable flag, runs, and `viaIR` globally.
+- **Persistent Configuration** – Store provider, compiler config, wallets, and contracts in the `./ethershell` directory.
+- **Comprehensive JSDoc** – Rich JSDoc comments for IDE autocompletion and type hints throughout the codebase.
 
 ## 🚀 Quick Start
 
@@ -36,12 +36,14 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 npm i -g ethershell
 
 # Start EtherShell in the root directory of your project:
-ethershell 
+ethershell
 
-#or
+# or
 
 npx ethershell
 ```
+
+Run the CLI in your project root so EtherShell can find `./contracts` and write `./ethershell` and `./build` data next to your project files.
 
 ### Basic Usage
 
@@ -53,11 +55,11 @@ ethershell
 # EtherShell>
 ```
 
-## 📖 Step-by-Step Guide
+## 📖 Step‑by‑Step Guide
 
 ### 1. Network Configuration
 
-First, connect to a blockchain network:
+First, connect to a blockchain network.
 
 ```javascript
 // View current network
@@ -72,6 +74,8 @@ EtherShell> chain('https://sepolia.infura.io/v3/YOUR-PROJECT-ID')
 EtherShell> defaultChain()
 { URL: 'http://127.0.0.1:8545' }
 ```
+
+Internally, `chain()` updates the in‑memory provider and saves the selected endpoint to `./ethershell/config.json` so it persists between sessions.
 
 ### 2. Wallet Management
 
@@ -103,6 +107,8 @@ EtherShell> newWallet(5)
 ]
 ```
 
+`newWallet()` persists wallets into `./ethershell/wallets.json`.
+
 #### Import Existing Wallets
 
 ```javascript
@@ -116,6 +122,8 @@ EtherShell> addWallet([
   '0xPrivateKey3...'
 ])
 ```
+
+EtherShell detects duplicate wallets by private key and throws if you attempt to re‑add an existing key.
 
 #### HD Wallet Management
 
@@ -140,16 +148,16 @@ EtherShell> addHDWallet('word word word ... (12 or 24 words)', 10)
 EtherShell> hdWallets()
 !WARNING!
  The generated accounts are NOT safe. Do NOT use them on main net!
-[...]
+[ ... ]
 ```
 
-#### Connect to Node-Managed Accounts
+#### Connect to Node‑Managed Accounts
 
 ```javascript
-// For Ganache, Hardhat, or other nodes with unlocked accounts
+// For Hardhat, Anvil, or other nodes with unlocked accounts
 EtherShell> connectWallet()
 
-// This adds accounts managed by the node (e.g., Ganache default accounts)
+// This adds accounts managed by the node (e.g., Hardhat default accounts)
 ```
 
 #### View Wallets
@@ -166,7 +174,7 @@ EtherShell> walletInfo(0)
 // or by address
 EtherShell> walletInfo('0x1234...5678')
 // or multiple
-EtherShell> walletInfo([0, 1, 2])
+EtherShell> walletInfo()[1][2]
 
 // Change default account
 EtherShell> changeDefWallet(0)
@@ -189,39 +197,47 @@ EtherShell> removeWallet('0x1234...5678')
 EtherShell> removeWallet('word word word ...')
 
 // Delete multiple by indices
-EtherShell> removeWallet([0, 2, 4])
+EtherShell> removeWallet()[2][3]
 
 // Delete all wallets
 EtherShell> removeWallet()
 ```
+
+Deletion updates in‑memory arrays and rewrites `./ethershell/wallets.json`; if the removed wallet is the default one, the default entry in `config.json` is also cleared.
 
 ### 3. Solidity Compilation
 
 #### Configure Compiler
 
 ```javascript
-// View current compiler version
+// View current compiler version (bundled solc if no remote has been loaded)
 EtherShell> compiler()
-"0.8.20+commit.a1b79de6.Emscripten.clang"
+"0.8.xx+commit....Emscripten.clang"
 
 // Switch to a different Solidity version
-EtherShell> compUpdate('v0.8.19+commit.7dd6d404')
-Loaded solc version: 0.8.19+commit.7dd6d404.Emscripten.clang
+EtherShell> compUpdate('v0.8.29+commit.ab55807c')
+Loaded solc version: 0.8.29+commit.ab55807c.Emscripten.clang
 
 // Configure compilation options (gasOptimizer, viaIR, optimizerRuns)
 EtherShell> compOpts(true, false, 1000)
 ✓ Compiler options updated:
  Gas Optimizer: Enabled
- Optimizer Runs: 1000
  ViaIR: Disabled
+ Optimizer Runs: 1000
 
-// Get current options
+// Get current compiler options
 EtherShell> compInfo()
-{ optimizer: true, optimizerRuns: 1000, viaIR: false }
+{
+  version: 'v0.8.29+commit.ab55807c',
+  optimizer: true,
+  viaIR: false,
+  optimizerRuns: 1000,
+  compilePath: './build'
+}
 
 // Get current config info
 EtherShell> configInfo()
-{ 
+{
   providerEndpoint: '...',
   defaultWallet: { ... },
   compiler: {
@@ -241,36 +257,44 @@ EtherShell> defWallet()
 EtherShell> compPath('./custom-build')
 ```
 
+Compiler configuration is kept in memory and mirrored into `config.json`, including version, optimizer flags, runs, and the default `compilePath`.
+
 #### Compile Contracts
 
 ```javascript
 // Compile all .sol files in ./contracts directory
 EtherShell> build()
 Contracts compiled into /path/to/build
+Aggregated ABI generated at /path/to/build/aggregated.abi.json
 TypeScript types generated in /path/to/build/types
 
 // Compile a specific contract file
 EtherShell> build('./contracts/MyToken.sol')
 Contract compiled into /path/to/build
 
-// Compile specific contracts from a file
+// Compile specific contracts from a file to a custom build directory
 EtherShell> build('./contracts/MyToken.sol', ['MyToken', 'OtherContract'], './custom-build')
 Contracts compiled into /path/to/custom-build
 
 // Clean build directory
 EtherShell> clean()
 Directory deleted successfully
-```
+``` 
 
 **Compiler Output Structure:**
-```
+
+```text
 build/
-├── artifacts/          # Complete contract data with metadata
-├── abis/              # Contract ABIs (.abi.json files)
-├── bytecode/          # Contract bytecode (.bin files)
-├── metadata/          # Contract metadata (.metadata.json files)
-└── types/             # Auto-generated TypeScript types
+├── artifacts/           # Complete contract data with metadata
+├── abis/                # Contract ABIs (.abi.json files)
+├── bytecode/            # Contract bytecode (.bin files)
+├── metadata/            # Contract metadata (.metadata.json files)
+├── standard-json/       # Per‑entry solc standard JSON inputs
+├── aggregated.abi.json  # Flattened ABI array from all ABI files
+└── types/               # Auto-generated TypeScript types
 ```
+
+TypeScript types are generated by scanning `build/abis` and writing `.ts` files plus an `index.ts` barrel export.
 
 ### 4. Smart Contract Deployment
 
@@ -294,50 +318,29 @@ EtherShell> deploy('contractName')
 // Deploy MyToken contract with constructor args and default wallet
 // Arguments: contractName, args[], walletIndex, [chainURL], [abiLocation], [bytecodeLocation]
 EtherShell> deploy('MyToken', ['MyTokenName', 'MTK', 1000000])
-{
-  hash: '0x123abc...',
-  from: '0x1234...5678',
-  to: null,
-  address: '0xabcd...ef01',
-  name: 'MyToken',
-  chain: 'sepolia',
-  chainId: 11155111n,
-  deployType: 'ethershell-deployed'
-}
+{ ... }
 
 // Deploy MyToken contract with constructor args and a non-default wallet
-// Arguments: contractName, args[], walletIndex, [chainURL], [abiLocation], [bytecodeLocation]
 EtherShell> deploy('MyToken', ['MyTokenName', 'MTK', 1000000], 0)
-{
-  hash: '0x123abc...',
-  from: '0x1234...5678',
-  to: null,
-  address: '0xabcd...ef01',
-  name: 'MyToken',
-  chain: 'sepolia',
-  chainId: 11155111n,
-  deployType: 'ethershell-deployed'
-}
+{ ... }
 
 // Deploy with custom chain
 EtherShell> deploy('MyContract', ['arg1', 'arg2'], 0, 'https://custom-rpc.url')
-
-// The deployed contract is automatically added to console context as a proxy
-EtherShell> MyToken
-Contract {
-  target: '0xabcd...ef01',
-  interface: Interface { ... },
-  runner: Signer { ... },
-  // ... contract methods available
-}
 ```
+
+ABIs and bytecode are resolved from the build directory via paths persisted in `./ethershell` local storage,.
 
 #### Add Existing Contracts
 
 ```javascript
 // Add an already-deployed contract
 // Arguments: contractName, contractAddress, walletIndex, abiPath, [chainURL]
-EtherShell> addContract('USDT', '0xdAC17F958D2ee523a2206206994597C13D831ec7', 0, './abis/USDT.json')
+EtherShell> addContract(
+  'USDT',
+  '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  0,
+  './build/abis/USDT.abi.json'
+)
 {
   index: 1,
   name: 'USDT',
@@ -347,10 +350,12 @@ EtherShell> addContract('USDT', '0xdAC17F958D2ee523a2206206994597C13D831ec7', 0,
   deployType: 'pre-deployed'
 }
 
-// Now you can interact with it
+// Now you can interact with it:
 EtherShell> USDT.balanceOf('0x1234...5678')
-n
+1000000000000000000n
 ```
+
+All added/deployed contracts are also stored in `./ethershell/contracts.json`.
 
 ### 5. Contract Interaction
 
@@ -387,6 +392,7 @@ EtherShell> contracts('0xabcd...ef01')
 EtherShell> contracts('MyToken')
 ```
 
+`contracts()` reads enriched contract information (including live balances).
 #### Call Contract Functions
 
 ```javascript
@@ -394,50 +400,43 @@ EtherShell> contracts('MyToken')
 EtherShell> MyToken
 Contract { ... }
 
-// Read-only functions (no gas cost)
+// Read-only functions
 EtherShell> MyToken.name()
 "MyTokenName"
 
 EtherShell> MyToken.totalSupply()
 1000000n
 
-// State-changing functions (costs gas, requires signer)
+// State-changing functions
 EtherShell> MyToken.transfer('0xRecipientAddress', 100)
-ContractTransactionResponse { ... }
+ContractTransactionReceipt { ... }
 
 // Call with advanced transaction options
 EtherShell> MyToken.transfer('0xRecipientAddress', 100, {
-  from: '0xSenderAddress',          // Switch signer
-  value: 10000000000000n,    // Send ETH (for payable functions)
-  gasLimit: 500000,                 // Custom gas limit
-  maxFeePerGas: 100000000000n,    // EIP-1559
+  from: '0xSenderAddress',              // Switch signer (must be a non node-managed wallet)
+  value: 10000000000000n,               // Send ETH (payable)
+  gasLimit: 500000,
+  maxFeePerGas: 100000000000n,
   maxPriorityFeePerGas: 2000000000n,
   nonce: 42,
   chainId: 1
 })
-
-// Check balance
-EtherShell> MyToken.balanceOf('0x1234...5678')
-100n
 ```
 
-**Contract Proxy Options:**
-The contract proxy wrapper supports these transaction options:
-- `from`: Change the signer/sender for the transaction
-- `value`: ETH amount to send (for payable functions)
-- `gasLimit` / `gas`: Maximum gas to use
-- `gasPrice`: Legacy transaction gas price
-- `maxFeePerGas`: EIP-1559 max fee per gas
-- `maxPriorityFeePerGas`: EIP-1559 priority fee per gas
-- `nonce`: Transaction nonce for ordering
-- `chainId`: Network chain ID
-- `accessList`: EIP-2930 access list
-- `type`: Transaction type (0, 1, 2, or 3)
-- `customData`: Custom data for special networks (zkSync)
+**Contract Proxy Options include:**
+
+- `from`: change signer (must have `privateKey`)
+- `value`: ETH value for payable functions
+- `gasLimit` or `gas`
+- `gasPrice`
+- `maxFeePerGas`, `maxPriorityFeePerGas`
+- `nonce`
+- `chainId`
+- `accessList`
+- `type`
+- `customData` for special networks (e.g., zkSync)[file:25]
 
 ## 🎯 Complete Usage Example
-
-Here's a full workflow example:
 
 ```javascript
 // 1. Connect to network
@@ -460,7 +459,6 @@ EtherShell> deploy('MyToken', ['TestToken', 'TEST', 1000000])
 
 // 7. Interact with contract
 EtherShell> MyToken.balanceOf('0x...')
-1000000000000000000000000n
 
 // 8. Transfer tokens with custom options
 EtherShell> tx = MyToken.transfer('0x...', 100, {
@@ -478,129 +476,98 @@ EtherShell> contracts()
 ## 📋 Command Reference
 
 ### Network Commands
-| Command | Description |
-|---------|-------------|
-| `chain(url)` | Connect to blockchain network |
-| `chainInfo()` | Get current network info |
-| `defaultChain()` | Get default network URL |
+
+| Command          | Description                         |
+|------------------|-------------------------------------|
+| `chain(url)`     | Connect to blockchain network       |
+| `chainInfo()`    | Get current network info            |
+| `defaultChain()` | Get default network URL             |[file:13][file:19]
 
 ### Wallet Commands
-| Command | Description |
-|---------|-------------|
-| `newWallet([count])` | Create random wallets |
-| `addWallet(privKey\|keys)` | Import wallets from private keys |
-| `newHDWallet([count])` | Create HD wallet with random mnemonic |
-| `addHDWallet(phrase, count)` | Import HD wallet from mnemonic |
-| `connectWallet()` | Connect to node-managed accounts |
-| `wallets()` | View regular accounts |
-| `hdWallets()` | View HD accounts |
-| `allWallets()` | View all accounts |
-| `walletInfo(index\|address\|[indices])` | Get wallet details (balance, nonce) |
-| `changeDefWallet(pointer)` | Set default account |
-| `removeWallet(pointer)` | Delete account(s) |
+
+| Command                                   | Description                                      |
+|-------------------------------------------|--------------------------------------------------|
+| `newWallet([count])`                      | Create random wallets                            |
+| `addWallet(privKey\|keys)`                | Import wallets from private keys                 |
+| `newHDWallet([count])`                    | Create HD wallet with random mnemonic            |
+| `addHDWallet(phrase, count)`             | Import HD wallet from mnemonic                   |
+| `connectWallet()`                         | Connect to node‑managed accounts                 |
+| `wallets()`                               | View regular accounts                            |
+| `hdWallets()`                             | View HD accounts                                 |
+| `allWallets()`                            | View all accounts                                |
+| `walletInfo(index\|address\|[indices])`   | Get wallet details (balance, nonce)             |
+| `changeDefWallet(pointer)`               | Set default account                              |
+| `removeWallet(pointer)`                  | Delete account(s)                                |[file:13][file:20][file:22]
 
 ### Compiler Commands
-| Command | Description |
-|---------|-------------|
-| `compiler()` | Get current Solidity version |
-| `compUpdate(version)` | Load specific Solidity version |
-| `compOpts(gasOpt, viaIR, runs)` | Configure optimization |
-| `compInfo()` | Get current compiler options |
-| `configInfo()` | Get all configuration info |
-| `defWallet()` | Get default account |
-| `compPath(newPath)` | Change build output path |
-| `build([path], [contracts], [output])` | Compile contracts |
-| `clean([path])` | Delete build directory |
+
+| Command                                         | Description                              |
+|-------------------------------------------------|------------------------------------------|
+| `compiler()`                                    | Get current Solidity version string      |
+| `compUpdate(version)`                           | Load specific Solidity version           |
+| `compOpts(gasOpt, viaIR, runs)`                 | Configure optimizer and viaIR            |
+| `compInfo()`                                    | Get current compiler configuration       |
+| `configInfo()`                                  | Get full configuration object            |
+| `defWallet()`                                   | Get default account from config          |
+| `compPath(newPath)`                             | Change build output path                 |
+| `build([path], [contracts], [output])`          | Compile contracts                        |
+| `clean([path])`                                 | Delete build directory (default `./build`) |[file:13][file:16][file:21][file:17]
 
 ### Contract Commands
-| Command | Description |
-|---------|-------------|
-| `deploy(name, [args], [index], [chainURL], [abiLocation], [bytecodeLocation])` | Deploy new contract |
-| `addContract(name, address, index, abiPath)` | Add existing contract |
-| `contracts([pointer])` | List contracts or get specific one |
+
+| Command                                                                 | Description                      |
+|-------------------------------------------------------------------------|----------------------------------|
+| `deploy(name, [args], [index], [chainURL], [abiLocation], [bytecodeLocation])` | Deploy new contract              |
+| `addContract(name, address, index, abiPath, [chainURL])`               | Add existing contract            |
+| `contracts([pointer])`                                                 | List contracts or get a specific one |[file:13][file:15][file:18]
 
 ## 🛠️ Setup for Development
 
 ### Prerequisites
-- Node.js 16+ 
+
+- Node.js 16+
 - npm or yarn
-- Basic Solidity knowledge
+- Basic Solidity knowledge[file:31]
 
-### Development Setup
-
-```bash
-# Install dev dependencies
-npm install --save-dev @types/node typescript
-
-# Run in development mode
-npm run dev
-
-# Run tests (if available)
-npm test
-```
 
 ### Project Structure
 
-```
+```text
 ethershell/
 ├── bin/
-│   └── cli.js                 # Entry point
+│   └── cli.js                  # REPL entry point
 ├── src/
 │   ├── services/
-│   │   ├── build.js          # Compiler management
-│   │   ├── wallet.js         # Wallet management
-│   │   ├── network.js        # Network provider
-│   │   ├── addContracts.js   # Contract deployment
-│   │   ├── contracts.js      # Contract retrieval
-│   │   ├── config.js         # Configuration
-│   │   └── files.js          # File utilities
+│   │   ├── build.js            # Compiler management & build orchestration
+│   │   ├── wallet.js           # Wallet management (accounts, HD, node-managed)
+│   │   ├── network.js          # Network provider configuration
+│   │   ├── addContracts.js     # Deployment & contract registration
+│   │   ├── contracts.js        # Contract lookup helper
+│   │   ├── configSync.js       # In‑memory <-> config.json synchronization
+│   │   └── files.js            # File system utilities (clean build)
 │   └── utils/
-│       ├── builder.js        # Compilation engine
-│       ├── dir.js            # Directory utilities
-│       ├── accounter.js      # Account utilities
-│       ├── contractProxy.js  # Contract proxy wrapper
-│       ├── contractLister.js # Contract formatting
-│       ├── typeGenerator.js  # TypeScript type generation
-│       ├── replHelper.js     # REPL customization
-│       ├── serialize.js      # BigInt serialization
-│       └── configFileUpdate.js # Config utilities
-├── contracts/                 # Your Solidity contracts
-├── build/                      # Compiled artifacts
-├── localStorage/              # Persistent config and wallet storage
+│       ├── builder.js          # Low‑level solc Standard JSON compiler wrapper
+│       ├── dir.js              # Directory & import resolution utilities
+│       ├── accounter.js        # Account storage and deletion utilities
+│       ├── contractProxy.js    # Contract proxy wrapper with tx options
+│       ├── contractLister.js   # Contracts registry and balance formatting
+│       ├── typeGenerator.js    # TypeScript type generation from ABIs
+│       ├── replHelper.js       # REPL customization & async eval
+│       ├── serialize.js        # BigInt serialization for JSON
+│       └── configFileUpdate.js # Helper to update provider in config.json
+├── contracts/                  # Your Solidity contracts
+├── build/                      # Compiled artifacts and types (output)
+├── ethershell/                 # Persistent config, wallets, contracts, solc cache
 └── package.json
 ```
 
+`./ethershell` contains `config.json`, `wallets.json`, `contracts.json`, and localStorage data used by the compiler and contract manager.
+
 ## 📚 Example Contracts
 
-### Simple ERC20 Token
+### Simple ERC20‑Style Token
 
-```solidity
-// contracts/MyToken.sol
-pragma solidity ^0.8.20;
-
-contract MyToken {
-    string public name = "My Token";
-    string public symbol = "MTK";
-    uint8 public decimals = 18;
-    uint256 public totalSupply = 1000000 * 10 ** uint256(decimals);
-    
-    mapping(address => uint256) public balanceOf;
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    
-    constructor() {
-        balanceOf[msg.sender] = totalSupply;
-    }
-    
-    function transfer(address to, uint256 value) public returns (bool) {
-        require(to != address(0));
-        require(balanceOf[msg.sender] >= value);
-        balanceOf[msg.sender] -= value;
-        balanceOf[to] += value;
-        emit Transfer(msg.sender, to, value);
-        return true;
-    }
-}
-```
+You can keep the existing sample token or plug in OpenZeppelin contracts; EtherShell will handle `@openzeppelin/...` imports as long as they are installed in `node_modules`.
 
 ### Deployment Example
 
@@ -613,7 +580,6 @@ EtherShell> deploy('MyToken')
 
 // 3. Interact
 EtherShell> MyToken.balanceOf('0x...')
-1000000000000000000000000n
 
 // 4. Transfer
 EtherShell> MyToken.transfer('0x...', 100)
@@ -623,17 +589,18 @@ EtherShell> MyToken.transfer('0x...', 100)
 
 ### Persistent Storage
 
-EtherShell stores configuration in the `localStorage` directory:
+EtherShell stores runtime data under the `./ethershell` directory in your project root.
 
+```text
+ethershell/
+├── config.json      # Compiler and network settings + default wallet
+├── wallets.json     # Imported/generated wallets
+└── contracts.json   # Registered contracts and metadata
 ```
-localStorage/
-├── config.json          # Compiler and network settings
-├── wallets.json         # Imported/generated wallets
-```
 
-### Configuration File
+Configuration is updated automatically as you change network, compiler options, default wallet, deploy contracts, or add existing contracts.
 
-The `config.json` file contains:
+### Configuration File Example
 
 ```json
 {
@@ -644,7 +611,7 @@ The `config.json` file contains:
     "type": "user-generated"
   },
   "compiler": {
-    "version": "v0.8.20+commit.a1b79de6",
+    "version": "v0.8.29+commit.ab55807c",
     "optimizer": false,
     "viaIR": false,
     "optimizerRuns": 200,
@@ -653,101 +620,75 @@ The `config.json` file contains:
 }
 ```
 
-### Environment Variables (Optional)
-
-Create a `.env` file (optional):
-
-```env
-# Network
-RPC_URL=http://127.0.0.1:8545
-
-# Build
-BUILD_PATH=./build
-
-# Contracts
-CONTRACTS_PATH=./contracts
-
-# Compiler
-COMPILER_VERSION=0.8.20+commit.a1b79de6
-OPTIMIZER_ENABLED=true
-OPTIMIZER_RUNS=200
-VIAIR_ENABLED=false
-```
-
 ## 🔒 Security Warnings
 
 ⚠️ **IMPORTANT SECURITY NOTES:**
 
-1. **Never use generated accounts on mainnet** - They are only for testing
-2. **Keep private keys safe** - Don't commit `.env` files or private keys to git
-3. **Use read-only RPCs** - For production, use read-only endpoints
-4. **Test on testnet first** - Always test contracts on Sepolia before mainnet
-5. **Verify contracts on Etherscan** - Always verify production contracts
+1. Never use generated accounts on mainnet – they are for development and testing only.
+2. Keep private keys secret – do not commit wallets or config files containing secrets.
+3. Use testnets (e.g. Sepolia) for experimentation before going to mainnet.
+4. Always audit and review your contracts before production deployments.
+
+Add to your `.gitignore`:
 
 ```bash
-# Add to .gitignore
 .env
-.env.local
 node_modules/
 build/
-localStorage/
+ethershell/
 *.log
 ```
 
+This prevents accidental commits of compiled artifacts and local wallet/config state.
+
 ## 🐛 Troubleshooting
 
-### Common Issues
-
 **Issue: `Error: Cannot find module 'ethers'`**
+
 ```bash
 Solution: npm install
 ```
 
 **Issue: `Cannot connect to network`**
-```bash
-- Check RPC URL is correct
-- Verify network is running (Hardhat, Ganache, etc.)
-- Check internet connection for public RPCs
-```
+
+- Check the RPC URL passed to `chain()`.[file:19]
+- Verify the network (Hardhat, Ganache, etc.) is running.
+- For public RPCs, check your internet connection and provider limits.
 
 **Issue: `Insufficient balance for gas`**
-```bash
-- Ensure wallet has enough ETH for gas
-- Use testnet faucet for test ETH
-- Check gas prices (sepolia is usually cheap)
-```
+
+- Ensure the selected wallet has enough ETH for gas.
+- Use testnet faucets when working on Sepolia or other testnets.
 
 **Issue: `Contract not found in build artifacts`**
-```bash
-- Run build() first
-- Check contract names match exactly
-- Verify .sol file exists in ./contracts
-```
 
-**Issue: `Cannot use 'from' option with node-managed account`**
-```bash
-- Node-managed accounts cannot be used with the 'from' option
-- Only imported/generated wallets with private keys support 'from'
-- Use .connect() method for node-managed accounts
-```
+- Run `build()` first.[file:16]
+- Check that contract names match exactly.
+- Verify `.sol` files exist under `./contracts`. [file:23]
 
 **Issue: `TypeScript types not generated`**
-```bash
-- Ensure contracts compiled successfully with build()
-- Check ABIs exist in build/abis/ directory
-- Look for error messages in the build() output
-```
+
+- Ensure compilation succeeded.
+- Confirm ABI files exist under `build/abis`.
+- Check console output for errors thrown by `generateAllTypes()`. [file:16][file:30]
+
+**Issue: error about `{ from }` with node‑managed account**
+
+- Node‑managed accounts do not have private keys in EtherShell, so `{ from }` cannot rebind them.
+- Import or generate a wallet with a private key and use that address in `from` instead. [file:20][file:25]
 
 ## 📖 API Documentation
 
-Full JSDoc documentation is available in the source files. Each file includes:
-- @fileoverview - File purpose
-- @param - Parameter types and descriptions
-- @returns - Return type information
-- @throws - Error documentation
-- @example - Usage examples
+The source code uses detailed JSDoc comments:
 
-Generate HTML docs:
+- `@fileoverview` – file purpose and module description
+- `@param` – parameter types and descriptions
+- `@returns` – return types
+- `@throws` – error conditions
+- `@example` – usage samples[file:13][file:16][file:20][file:25]
+
+You can generate static docs with JSDoc if desired:
+
 ```bash
 npm install -g jsdoc
 jsdoc src/ -r -d docs/
@@ -755,38 +696,26 @@ jsdoc src/ -r -d docs/
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes.
+4. Push to your branch.
+5. Open a Pull Request.[file:31]
 
 ## 📄 License
 
-This project is licensed under the BUSL-1.1 License - see LICENSE file for details.
+This project is licensed under the BUSL‑1.1 License – see the `LICENSE` file for details. [file:31]
 
 ## 💬 Support & Community
 
-- **Issues**: Report bugs on GitHub Issues
-- **Discussions**: Ask questions on GitHub Discussions
-- **Documentation**: Check the docs/ folder
-
-## 🎓 Learning Resources
-
-- [Solidity Documentation](https://docs.soliditylang.org/)
-- [Ethers.js Documentation](https://docs.ethers.org/)
-- [Ethereum Development Guide](https://ethereum.org/en/developers/docs/)
-- [Hardhat Documentation](https://hardhat.org/docs)
-
-## 📞 Contact
-
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- Issues: GitHub Issues
+- Questions: GitHub Discussions
+- Docs: This README and `ethershell-website.html`[file:31][file:32]
 
 ---
 
-**Made with ❤️ for Ethereum developers**
+**Made with ❤️ for Ethereum developers.**
 
-Happy coding! 🚀
+Happy hacking! 🚀

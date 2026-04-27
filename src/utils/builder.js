@@ -111,7 +111,7 @@ export function build(fullPath, selectedContracts, buildPath) {
     input.settings.viaIR = true;
   }
 
-  // Compile with import callback
+  // Compile with import callback (used for anything not in `sources`)
   const output = JSON.parse(
     solc.compile(
       JSON.stringify(input),
@@ -121,7 +121,7 @@ export function build(fullPath, selectedContracts, buildPath) {
 
   if (output.errors) {
     // Filter out warnings, only throw on actual errors
-    const errors = output.errors.filter(err => err.severity === 'error');
+    const errors = output.errors.filter((err) => err.severity === 'error');
     if (errors.length > 0) {
       throw errors;
     }
@@ -133,13 +133,7 @@ export function build(fullPath, selectedContracts, buildPath) {
   const bytecode = path.join(buildPath, 'bytecode');
   const metadata = path.join(buildPath, 'metadata');
   const standardJsonDir = path.join(buildPath, 'standard-json');
-  const subPaths = [
-    artifacts,
-    abis,
-    bytecode,
-    metadata,
-    standardJsonDir,
-  ];
+  const subPaths = [artifacts, abis, bytecode, metadata, standardJsonDir];
 
   // Ensure all sub-paths exist
   subPaths.forEach(check);
@@ -208,6 +202,11 @@ export function extractLoadableVersion(fullVersion) {
 
 /*=========================== HELPER =============================*/
 
+/**
+ * Resolve a filesystem path for an import.
+ * - Relative imports: resolved from `fromDir`
+ * - Package imports (starting with '@'): from project root `node_modules`
+ */
 function resolveImportPath(importPath, fromDir) {
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
     return path.resolve(fromDir, importPath);
@@ -219,12 +218,33 @@ function resolveImportPath(importPath, fromDir) {
 }
 
 /**
+ * Compute a canonical logical name for Standard JSON "sources".
+ *
+ * Rules:
+ * - If importPath starts with '@', it is anchored at node_modules, so the
+ *   canonical name is exactly the import string (e.g. '@openzeppelin/...').
+ * - Otherwise, it is resolved relative to the parent canonical name.
+ */
+function computeCanonicalName(parentCanonical, importPath) {
+  // Always anchor @-imports at the package root
+  if (importPath.startsWith('@')) {
+    return importPath;
+  }
+
+  const parentDir = path.posix.dirname(parentCanonical || '');
+  if (!parentDir || parentDir === '.') {
+    return path.posix.normalize(importPath);
+  }
+  return path.posix.normalize(path.posix.join(parentDir, importPath));
+}
+
+/**
  * Collect all Solidity sources reachable from an entry file and build
  * a Standard JSON "sources" object with canonical logical names that
  * match solc's internal resolution.
  *
  * @param {string} entryPath - Absolute path to the entry .sol file
- * @param {string} logicalEntryName - Initial logical name (e.g. 'Cliff.sol')
+ * @param {string} logicalEntryName - Initial logical name (e.g. 'MainVestingWalletCliff.sol')
  * @returns {Object} Standard JSON "sources" map
  */
 function collectSourcesForStandardJson(entryPath, logicalEntryName) {
@@ -259,21 +279,15 @@ function collectSourcesForStandardJson(entryPath, logicalEntryName) {
 
       const resolved = resolveImportPath(importPath, path.dirname(absPath));
 
-      // Compute child canonical name relative to the parent canonical name,
-      // using POSIX paths so it behaves the same on Windows and Linux.
-      const parentDir = path.posix.dirname(canonicalName);
-      const childCanonicalName =
-        parentDir === '.'
-          ? path.posix.normalize(importPath)
-          : path.posix.normalize(
-              path.posix.join(parentDir, importPath)
-            );
+      const childCanonicalName = computeCanonicalName(canonicalName, importPath);
 
       processFile(resolved, childCanonicalName);
     }
   }
 
-  const entryCanonicalName = logicalEntryName || path.basename(entryPath);
+  const entryCanonicalName = path.posix.normalize(
+    logicalEntryName || path.basename(entryPath)
+  );
   processFile(entryPath, entryCanonicalName);
   return sources;
 }

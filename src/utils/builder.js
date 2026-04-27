@@ -21,12 +21,12 @@ const localStorage = new LocalStorage('./ethershell');
 /**
  * Load a specific version of the Solidity compiler
  * @param {string} version - Solidity compiler version identifier
- * @returns {Promise<Object>} Promise resolving to solc instance
+ * @returns {Promise} Promise resolving to solc instance
  * @throws {Error} If version loading fails
  * @example
  * loadSolcVersion('v0.8.20+commit.a1b79de6');
  */
-export function loadSolcVersion(version){
+export function loadSolcVersion(version) {
   return new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcInstance) => {
       if (err) reject(err);
@@ -40,12 +40,12 @@ export function loadSolcVersion(version){
  * @async
  * @param {string} version - Solidity compiler version identifier
  * @param {Object} solcInstance - Current solc instance
- * @returns {Promise<Object>} New solc instance with the specified version
+ * @returns {Promise} New solc instance with the specified version
  * @throws {Error} If version loading fails
  * @example
  * setVersion('v0.8.20+commit.a1b79de6', solcInstance);
  */
-export async function setVersion(version, solcInstance){
+export async function setVersion(version, solcInstance) {
   solcInstance = await new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcSpecificVersion) => {
       if (err) reject(err);
@@ -60,7 +60,7 @@ export async function setVersion(version, solcInstance){
 /**
  * Build (compile) a Solidity contract and save artifacts
  * @param {string} fullPath - Full path to the .sol file
- * @param {Array<string>} [selectedContracts=[]] - Array of contract names to compile from the file
+ * @param {Array} [selectedContracts=[]] - Array of contract names to compile from the file
  * @param {string} buildPath - Output directory for compilation artifacts
  * @returns {void}
  * @throws {Error} If compilation fails or produces errors
@@ -72,16 +72,16 @@ export async function setVersion(version, solcInstance){
  * @example
  * build('./contracts/MyToken.sol', ['MyToken'], './build');
  */
-export function build(fullPath, selectedContracts, buildPath){
-  if(!selectedContracts){
+export function build(fullPath, selectedContracts, buildPath) {
+  if (!selectedContracts) {
     selectedContracts = [];
   }
 
   const compilerConfig = getCompilerOptions();
-  
+
   // Get the directory containing the contract
   const contractDir = path.dirname(fullPath);
-  const filename = path.basename(fullPath);        // keep extension here
+  const filename = path.basename(fullPath); // keep extension here
   const basename = path.basename(fullPath, '.sol');
 
   // Build full standard JSON input, including all imports
@@ -119,56 +119,72 @@ export function build(fullPath, selectedContracts, buildPath){
     )
   );
 
-  if(output.errors) {
+  if (output.errors) {
     // Filter out warnings, only throw on actual errors
     const errors = output.errors.filter(err => err.severity === 'error');
-    if(errors.length > 0) {
+    if (errors.length > 0) {
       throw errors;
     }
   }
 
-
-
   // Generate sub-paths of build
-const artifacts = path.join(buildPath, 'artifacts');
-const abis = path.join(buildPath, 'abis');
-const bytecode = path.join(buildPath, 'bytecode');
-const metadata = path.join(buildPath, 'metadata');
-const standardJsonDir = path.join(buildPath, 'standard-json');
+  const artifacts = path.join(buildPath, 'artifacts');
+  const abis = path.join(buildPath, 'abis');
+  const bytecode = path.join(buildPath, 'bytecode');
+  const metadata = path.join(buildPath, 'metadata');
+  const standardJsonDir = path.join(buildPath, 'standard-json');
   const subPaths = [
-      artifacts,
-      abis,
-      bytecode,
-      metadata,
-      standardJsonDir
+    artifacts,
+    abis,
+    bytecode,
+    metadata,
+    standardJsonDir,
   ];
 
   // Ensure all sub-paths exist
   subPaths.forEach(check);
+
   const allContracts = Object.keys(output.contracts[`${filename}`]);
-  const contractsToSave = selectedContracts.length > 0 ? allContracts.filter(
-    (contractName) => {
-      return selectedContracts.includes(contractName);
-    }
-  ): allContracts;
+  const contractsToSave =
+    selectedContracts.length > 0
+      ? allContracts.filter((contractName) =>
+          selectedContracts.includes(contractName)
+        )
+      : allContracts;
+
   contractsToSave.forEach((contractName) => {
     const contractsData = output.contracts[`${filename}`][contractName];
-    // Save on artifacts
+
+    // Save artifacts
     const artifactsPath = path.join(artifacts, `${contractName}.json`);
     fs.writeFileSync(artifactsPath, JSON.stringify(contractsData, null, 2));
-    // Save on abis
+
+    // Save ABI
     const abisPath = path.join(abis, `${contractName}.abi.json`);
     fs.writeFileSync(abisPath, JSON.stringify(contractsData.abi, null, 2));
-    // Save on bytecode
+
+    // Save bytecode
     const bytecodePath = path.join(bytecode, `${contractName}.bin`);
-    fs.writeFileSync(bytecodePath, JSON.stringify(contractsData.evm.bytecode, null, 2));
-    // Save on metadata
+    fs.writeFileSync(
+      bytecodePath,
+      JSON.stringify(contractsData.evm.bytecode, null, 2)
+    );
+
+    // Save metadata
     const metadataPath = path.join(metadata, `${contractName}.metadata.json`);
-    fs.writeFileSync(metadataPath, JSON.stringify(contractsData.metadata, null, 2));
+    fs.writeFileSync(
+      metadataPath,
+      JSON.stringify(contractsData.metadata, null, 2)
+    );
+
     // Save standard JSON input for this entry file
-    const standardJsonPath = path.join(standardJsonDir,`${basename}.standard-input.json`);
+    const standardJsonPath = path.join(
+      standardJsonDir,
+      `${basename}.standard-input.json`
+    );
     fs.writeFileSync(standardJsonPath, JSON.stringify(input, null, 2));
-    // Store abis and bytecode on local storage
+
+    // Store ABIs and bytecode in local storage
     localStorage.setItem(`${contractName}_abi`, abisPath);
     localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
   });
@@ -179,7 +195,7 @@ const standardJsonDir = path.join(buildPath, 'standard-json');
  * @param {string} fullVersion - Full version string (e.g., "0.8.20+commit.a1b79de6.Emscripten.clang")
  * @returns {string} Loadable version format (e.g., "v0.8.20+commit.a1b79de6")
  * @example
- * extractLoadableVersion("0.8.20+commit.a1b79de6.Emscripten.clang"); // Returns: "v0.8.20+commit.a1b79de6"
+ * extractLoadableVersion("0.8.20+commit.a1b79de6.Emscripten.clang"); // "v0.8.20+commit.a1b79de6"
  */
 export function extractLoadableVersion(fullVersion) {
   // Match version number and commit hash from full version string
@@ -191,6 +207,7 @@ export function extractLoadableVersion(fullVersion) {
 }
 
 /*=========================== HELPER =============================*/
+
 function resolveImportPath(importPath, fromDir) {
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
     return path.resolve(fromDir, importPath);
@@ -201,21 +218,36 @@ function resolveImportPath(importPath, fromDir) {
   return path.resolve(process.cwd(), 'node_modules', importPath);
 }
 
+/**
+ * Collect all Solidity sources reachable from an entry file and build
+ * a Standard JSON "sources" object with canonical logical names that
+ * match solc's internal resolution.
+ *
+ * @param {string} entryPath - Absolute path to the entry .sol file
+ * @param {string} logicalEntryName - Initial logical name (e.g. 'Cliff.sol')
+ * @returns {Object} Standard JSON "sources" map
+ */
 function collectSourcesForStandardJson(entryPath, logicalEntryName) {
   const visited = new Set();
   const sources = {};
 
-  function processFile(absPath, logicalName) {
+  /**
+   * @param {string} absPath - Absolute filesystem path
+   * @param {string} canonicalName - Logical name used as key in `sources`
+   */
+  function processFile(absPath, canonicalName) {
     if (visited.has(absPath)) return;
     visited.add(absPath);
 
     if (!fs.existsSync(absPath)) {
-      console.warn(`Warning: cannot resolve import "${logicalName}" at path "${absPath}"`);
+      console.warn(
+        `Warning: cannot resolve import "${canonicalName}" at path "${absPath}"`
+      );
       return;
     }
 
     const content = fs.readFileSync(absPath, 'utf8');
-    sources[logicalName] = { content };
+    sources[canonicalName] = { content };
 
     const importRegex =
       /import\s+(?:(?:["']([^"']+)["'])|(?:.*?\sfrom\s+["']([^"']+)["']))\s*;/g;
@@ -226,13 +258,22 @@ function collectSourcesForStandardJson(entryPath, logicalEntryName) {
       if (!importPath) continue;
 
       const resolved = resolveImportPath(importPath, path.dirname(absPath));
-      // Use the import string itself as the logical source key,
-      // which is what solc/Etherscan expect
-      processFile(resolved, importPath);
+
+      // Compute child canonical name relative to the parent canonical name,
+      // using POSIX paths so it behaves the same on Windows and Linux.
+      const parentDir = path.posix.dirname(canonicalName);
+      const childCanonicalName =
+        parentDir === '.'
+          ? path.posix.normalize(importPath)
+          : path.posix.normalize(
+              path.posix.join(parentDir, importPath)
+            );
+
+      processFile(resolved, childCanonicalName);
     }
   }
 
-  processFile(entryPath, logicalEntryName);
+  const entryCanonicalName = logicalEntryName || path.basename(entryPath);
+  processFile(entryPath, entryCanonicalName);
   return sources;
 }
-

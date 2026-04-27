@@ -101,8 +101,7 @@ if(storedUrl) {
 
 // 3) Set Compiler to Memory:
 // Initialize global configuration of compiler
-// if(storedCompConfig){
-if(false){
+if(storedCompConfig){
   configFile.compiler = storedCompConfig.compiler;
   console.info(`Compiler is loading ...`);
   compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);

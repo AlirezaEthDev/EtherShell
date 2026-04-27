@@ -70,7 +70,17 @@ let storedCompConfig;
  * Object containing properties of config file
  * @type {Object}
  */
-let configObj;
+let configObj = {
+        providerEndpoint: "http://127.0.0.1:8545",
+        defaultWallet: {},
+        compiler: {
+            version: "v0.8.29+commit.ab55807c",
+            optimizer: false,
+            viaIR: false,
+            optimizerRuns: 200,
+            compilePath: "./build"
+        }
+    }
 
 // 1) Load config file
 /**
@@ -101,7 +111,8 @@ if(storedUrl) {
 
 // 3) Set Compiler to Memory:
 // Initialize global configuration of compiler
-if(storedCompConfig){
+// if(storedCompConfig){
+if(false){
   configFile.compiler = storedCompConfig.compiler;
   console.info(`Compiler is loading ...`);
   compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);

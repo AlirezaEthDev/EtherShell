@@ -23,7 +23,7 @@ export function deleteDirectory(dirPath){
     }
     // Check if the directory exists
     if(!fs.existsSync(dirPath)){
-      console.info('Path is not a directory');
+      console.info('Path is not a directory. Do not use relative path!');
       return;    
     }
 

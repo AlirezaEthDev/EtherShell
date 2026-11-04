@@ -21,6 +21,7 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 - **Contract Proxy Wrapper** – Enhanced contract interaction with a proxy that supports `from`, `value`, gas options, EIP‑1559 fields, and custom data.
 - **Contract Interactions** – Call contract methods (read & write) with advanced options directly from the shell.
 - **ABI & Bytecode Generation** – Organized artifacts (`artifacts`, `abis`, `bytecode`, `metadata`) plus an aggregated ABI file.
+- **Contract Flattening** – Merge a Solidity entry file and its local or `node_modules` imports into one verifiable `.sol` file.
 - **Node Signer Integration** – Connect to node‑managed accounts (Hardhat, Anvil, etc.).
 - **TypeScript Code Generation** – Auto‑generate TypeScript types from ABIs into a `types/` directory under the build path.
 - **Gas Optimization Controls** – Configure optimizer enable flag, runs, and `viaIR` globally.
@@ -281,6 +282,22 @@ EtherShell> clean()
 Directory deleted successfully
 ``` 
 
+#### Flatten Contracts
+
+`flatten()` combines a root Solidity file with its imported dependencies into a single file. It supports relative imports and package imports from `node_modules`, such as OpenZeppelin contracts.
+
+```javascript
+// Flatten a contract into <contract-name>.flattened.sol
+EtherShell> flatten('./contracts/MyToken.sol')
+Flattened contract written to /path/to/contracts/MyToken.flattened.sol
+
+// Flatten into a custom output file
+EtherShell> flatten('./contracts/MyToken.sol', './output/MyToken.flat.sol')
+Flattened contract written to /path/to/output/MyToken.flat.sol
+```
+
+The generated file contains one SPDX license identifier and one `pragma solidity` statement, followed by the dependency and entry-file source in dependency order. Review the result before verification or deployment, especially when imported files use different licenses.
+
 **Compiler Output Structure:**
 
 ```text
@@ -451,25 +468,28 @@ EtherShell> wallets()
 // 4. Configure compiler
 EtherShell> compOpts(true, false, 1000)
 
-// 5. Compile contracts
+// 5. Flatten dependencies into one file (optional)
+EtherShell> flatten('./contracts/MyToken.sol')
+
+// 6. Compile contracts
 EtherShell> build()
 
-// 6. Deploy contract
+// 7. Deploy contract
 EtherShell> deploy('MyToken', ['TestToken', 'TEST', 1000000])
 
-// 7. Interact with contract
+// 8. Interact with contract
 EtherShell> MyToken.balanceOf('0x...')
 
-// 8. Transfer tokens with custom options
+// 9. Transfer tokens with custom options
 EtherShell> tx = MyToken.transfer('0x...', 100, {
   gasLimit: 100000,
   maxFeePerGas: 50000000000n
 })
 
-// 9. Check balance again
+// 10. Check balance again
 EtherShell> MyToken.balanceOf('0x...')
 
-// 10. View all contracts
+// 11. View all contracts
 EtherShell> contracts()
 ```
 
@@ -511,7 +531,8 @@ EtherShell> contracts()
 | `defWallet()`                                   | Get default account from config          |
 | `compPath(newPath)`                             | Change build output path                 |
 | `build([path], [contracts], [output])`          | Compile contracts                        |
-| `clean([path])`                                 | Delete build directory (default `./build`) |[file:13][file:16][file:21][file:17]
+| `clean([path])`                                 | Delete build directory (default `./build`) |
+| `flatten(path, [output])`                       | Flatten a Solidity file and its imports into one file |[file:13][file:16][file:21][file:17]
 
 ### Contract Commands
 

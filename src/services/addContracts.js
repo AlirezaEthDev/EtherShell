@@ -165,11 +165,11 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         ////////////////////////////////////////////
 
         const deployHash = deployTx.deploymentTransaction().hash;
-        const tx = await provider.getTransaction(deployHash);
+        const tx = await currentProvider.getTransaction(deployHash);
         delete tx.data;
 
         // Get event values
-        const tx1 = await provider.getTransactionReceipt(deployHash);
+        const tx1 = await currentProvider.getTransactionReceipt(deployHash);
         const eventValues = eventOf(contractInstance, tx1);
 
         // Decorate transaction object with metadata

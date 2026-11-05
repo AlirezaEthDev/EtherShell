@@ -16,6 +16,7 @@ An interactive Node.js console for Ethereum smart contract development. Write, c
 - **Interactive REPL Shell** – Custom async evaluation with top‑level `await` support in a Node.js REPL.
 - **Solidity Compilation** – Compile contracts with configurable optimization and `viaIR` options.
 - **Smart Contract Deployment** – Deploy contracts to any EVM network using ethers v6.
+- **Contract Restoration** – Recreate previously deployed or added contract proxies in a new session with `restoreContract()`.
 - **Wallet Management** – Create, import, and manage wallets (regular & HD wallets, plus node‑managed accounts).
 - **Multi‑Network Support** – Switch between blockchain networks with persistent provider configuration.
 - **Contract Proxy Wrapper** – Enhanced contract interaction with a proxy that supports `from`, `value`, gas options, EIP‑1559 fields, and custom data.
@@ -374,6 +375,39 @@ EtherShell> USDT.balanceOf('0x1234...5678')
 
 All added/deployed contracts are also stored in `./ethershell/contracts.json`.
 
+#### Restore Stored Contracts
+
+Use `restoreContract()` after restarting EtherShell to make previously deployed or added contracts available by name again. It takes no arguments and recreates contract proxies from the saved names, addresses, and ABI paths in the contract registry loaded from `./ethershell/contracts.json` at startup. It does not compile or redeploy contracts, send transactions, or restore on-chain state.
+
+Start EtherShell from the same project root, then confirm the network and select an existing wallet with a private key before restoring:
+
+```javascript
+// Connect to the network where the stored contracts are deployed
+// Skip this if the saved RPC endpoint already points to the correct network
+EtherShell> chain('http://127.0.0.1:8545')
+
+// Select an existing imported/generated wallet or HD account
+// Replace 0 with the appropriate wallet index
+EtherShell> changeDefWallet(0)
+
+// Restore all registered contracts into the current session
+EtherShell> restoreContract()
+Stored contracts instantiating ...
+All stored contracts instantiated!
+
+// A stored contract named MyToken is now available again
+EtherShell> MyToken.balanceOf('0x1234...5678')
+```
+
+**Requirements and behavior:**
+
+- Keep `./ethershell/contracts.json` and the ABI files referenced by its entries. Relative ABI paths are resolved from the current working directory; if you delete or move build artifacts, restore the ABI files at their recorded paths before running the command.
+- Every restored contract uses the current default wallet. The selected account must have a private key; node-managed accounts are not supported by this restoration path.
+- **All contracts are attached to the currently selected network.** The command does not switch networks using the stored `chain` or `chainId`, validate them against the active network, or recover a custom RPC URL previously passed to `deploy()` or `addContract()`. Use this bulk command only when the stored contracts belong to the active network; for a mixed-network registry, attach contracts individually with `addContract(..., chainURL)` instead.
+- The command restores all registry entries; it has no contract-name, wallet-index, or network arguments. On success, it prints the messages shown above rather than returning a contract list. Use `contracts()` to inspect the registry.
+- Restoration uses the registry already loaded in memory. If you manually edit `contracts.json` while EtherShell is running, restart the console to load those changes.
+- Run it once when resuming a session. Repeating it recreates the named proxies and appends contract references to the default wallet's in-memory contract list, but does not add duplicate entries to `contracts.json`. If an entry fails to restore, the command stops at that error; contracts restored before the error remain available.
+
 ### 5. Contract Interaction
 
 #### View Contracts
@@ -493,6 +527,17 @@ EtherShell> MyToken.balanceOf('0x...')
 EtherShell> contracts()
 ```
 
+To resume working with the same contracts after restarting EtherShell in this project, check the network and default wallet, then restore the saved contract proxies:
+
+```javascript
+EtherShell> chainInfo()
+EtherShell> defWallet()
+EtherShell> restoreContract()
+EtherShell> MyToken.balanceOf('0x...')
+```
+
+See [Restore Stored Contracts](#restore-stored-contracts) for prerequisites and network limitations.
+
 ## 📋 Command Reference
 
 ### Network Commands
@@ -540,6 +585,7 @@ EtherShell> contracts()
 |-------------------------------------------------------------------------|----------------------------------|
 | `deploy(name, [args], [index], [chainURL], [abiLocation], [bytecodeLocation])` | Deploy new contract              |
 | `addContract(name, address, index, abiPath, [chainURL])`               | Add existing contract            |
+| `restoreContract()`                                                  | Restore all stored contract proxies with the current network and default wallet |
 | `contracts([pointer])`                                                 | List contracts or get a specific one |[file:13][file:15][file:18]
 
 ## 🛠️ Setup for Development
@@ -686,6 +732,14 @@ Solution: npm install
 - Run `build()` first.[file:16]
 - Check that contract names match exactly.
 - Verify `.sol` files exist under `./contracts`. [file:23]
+
+**Issue: stored contract variables are unavailable after restarting EtherShell**
+
+- Start EtherShell from the same project root so it loads the correct `./ethershell/contracts.json`.
+- Confirm the correct network with `chainInfo()` and select a wallet with a private key using `changeDefWallet(index)`.
+- Run `restoreContract()` before calling stored contracts by name.
+- If restoration fails, check that the saved ABI paths still point to readable, valid ABI JSON files and that the RPC endpoint is reachable. After fixing an ABI path in `contracts.json`, restart EtherShell before retrying.
+- If a local development chain was reset, restoring proxies does not bring back its deployed code or state; redeploy the contracts and use the new addresses.
 
 **Issue: `TypeScript types not generated`**
 

@@ -79,3 +79,23 @@ export function getContractJSON(){
         return [];
     }
 }
+
+/**
+ * Update contracts array, contracts.json, and index of proxied contract to call on the shell
+ * @param {Object} contractRecord - The record of new contract to store
+ * @param {Object} proxiedContract - the proxied contract to call on the shell
+ * @returns {number} The assigned zero-based registry index.
+ * @throws {Error} If serialization or writing the registry fails.
+ */
+export function appendContract(contractRecord, proxiedContract) {
+    // Prepare contract record to store
+    const index = contracts.length;
+    const contractToStore = {index, ...contractRecord};
+    // Store new record on contracts array
+    contracts.push(contractToStore);
+    // Set the index to call contract on the shell
+    proxiedContract._contractIndex = index;
+    // Store the new array on contracts.json instead the previous array
+    updateContractJSON(contracts);
+    return index;
+}

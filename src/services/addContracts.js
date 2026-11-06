@@ -19,7 +19,8 @@ import { createContractProxy } from '../utils/contractProxy.js';
 import { eventOf } from '../utils/event.js';
 import {
     updateContractJSON,
-    getContractJSON
+    getContractJSON,
+    appendContract
 } from '../utils/contractLister.js';
 
 /**
@@ -38,21 +39,25 @@ export const contracts = getContractJSON();
  * Instantiate stored contracts to interact with the shell
  */
 export async function restore() {
-    if(contracts) {
-        console.info(`Stored contracts instantiating ...`);
-        const contractsLength = contracts.length;
-        for(let i = 0; i < contractsLength; i++) {
-            await _add(
-                contracts[i].name,
-                contracts[i].address,
-                configFile.defaultWallet.index,
-                contracts[i].abiPath
-            );
-        }
-        console.info(`All stored contracts instantiated!`);
-    } else {
-        return `The storage is empty!`;
-    }
+  if (contracts.length === 0) {
+    return 'The storage is empty!';
+  }
+
+  console.info('Stored contracts instantiating ...');
+
+  for (const record of contracts) {
+    const result = await _add(
+      record.name,
+      record.address,
+      configFile.defaultWallet.index,
+      record.abiPath
+    );
+
+    result.proxiedContract._contractIndex = record.index;
+    result.proxiedContract._contractDeployType = record.deployType;
+  }
+
+  console.info('All stored contracts instantiated!');
 }
 
 
@@ -119,7 +124,6 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         allAccounts[accIndex].contracts.push(contSpec);
 
         // Decorate contract instance with metadata
-        deployTx._contractIndex = contracts.length;
         deployTx._contractName = contractName;
         deployTx._contractChain = connectedChain.name;
         deployTx._contractChainId = connectedChain.chainId;
@@ -136,7 +140,6 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         // Wrap the contract instace with proxy
         const proxiedContract = createContractProxy(contractInstance, currentProvider, allAccounts);
 
-        proxiedContract._contractIndex = contracts.length;
         proxiedContract._contractName = contractName;
         proxiedContract._contractChain = connectedChain.name;
         proxiedContract._contractChainId = connectedChain.chainId;
@@ -144,23 +147,25 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         proxiedContract._contractProvider = currentProvider;
         proxiedContract._contractABIPath = abiPath;
 
-        // Add to REPL context with proxy
-        r.context[contractName] = proxiedContract;
+        // Get the balance of the contract
+        const balance = await currentProvider.getBalance(proxiedContract.target);
 
-        const contracToStore = {
-            index: proxiedContract._contractIndex,
-            name: proxiedContract._contractName,
+        // Create the contract record to store
+        const contractRecord = {
+            name: contractName,
             address: proxiedContract.target,
-            chain: proxiedContract._contractChain,
-            chainId: proxiedContract._contractChainId,
-            deployType: proxiedContract._contractDeployType,
-            balance: await proxiedContract.provider.getBalance(proxiedContract.target),
-            abiPath: proxiedContract._contractABIPath
+            chain: connectedChain.name,
+            chainId: connectedChain.chainId,
+            deployType: 'ethershell-deployed',
+            balance,
+            abiPath
         }
-        contracts.push(contracToStore);
+        
+        // Store the contract record on shell memory (contracts array) and storage (contracts.json)
+        const contractIndex = appendContract(contractRecord, proxiedContract);
 
-        // Update contracts.json
-        updateContractJSON(contracts);
+        // Update index of the contract instance
+        deployTx._contractIndex = contractIndex;
 
         ////////////////////////////////////////////
 
@@ -186,6 +191,7 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         return tx;
     } catch(err) {
         console.error(err);
+        throw err;
     }
 }
 
@@ -206,26 +212,27 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
     try {
         const result = await _add(contractName, contractAddr, accIndex, abiLoc, chain);
         
-        // Decorate contract object
-        const contracToStore = {
-            index: result.index,
+        // Get the balance of the contract
+        const balance = await result.provider.getBalance(result.address);
+
+        // Create the contract record to store
+        const contractRecord = {
             name: result.name,
             address: result.address,
             chain: result.chain,
             chainId: result.chainId,
             deployType: result.deployType,
-            balance: await result.provider.getBalance(result.address),
-            abiPath: abiLoc
+            balance,
+            abiPath: result.abiPath
         }
-        // Update contracts array
-        contracts.push(contracToStore);
 
-        // Update contracts.json
-        updateContractJSON(contracts);
+        // Store the contract record on shell memory (contracts array) and storage (contracts.json)
+        result.index = appendContract(contractRecord, result.proxiedContract);
 
         return result;
     } catch(err) {
         console.error(err);
+        throw err;
     }
 }
 
@@ -293,7 +300,7 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
     allAccounts[accIndex].contracts.push(contSpec);
 
     // Decorate contract instance with metadata
-    newContract._contractIndex = contracts.length + 1;
+    newContract._contractIndex = contracts.length;
     newContract._contractName = contractName;
     newContract._contractChain = connectedChain.name;
     newContract._contractChainId = connectedChain.chainId;
@@ -308,7 +315,9 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
         chain: newContract._contractChain,
         chainId: newContract._contractChainId,
         deployType: newContract._contractDeployType,
-        provider: newContract._contractProvider
+        provider: newContract._contractProvider,
+        abiPath,
+        proxiedContract,
     }
 
     return result;

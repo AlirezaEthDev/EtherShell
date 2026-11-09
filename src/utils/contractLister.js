@@ -91,6 +91,11 @@ export function appendContract(contractRecord, proxiedContract) {
     // Prepare contract record to store
     const index = contracts.length;
     const contractToStore = {index, ...contractRecord};
+    // Checking duplication
+    const isDuplicated = detectDupContract(contractToStore.address, contractToStore.chainId);
+    if(isDuplicated.status) {
+        throw `Contracts may NOT be duplicated! You are adding contract index ${isDuplicated.index} again!`
+    }
     // Store new record on contracts array
     contracts.push(contractToStore);
     // Set the index to call contract on the shell
@@ -98,4 +103,28 @@ export function appendContract(contractRecord, proxiedContract) {
     // Store the new array on contracts.json instead the previous array
     updateContractJSON(contracts);
     return index;
+}
+
+function detectDupContract(contractAddr, chainId) {
+    // Check if contract address is duplicated
+    const foundDupContracts = contracts.filter(contract => contract.address == contractAddr);
+    if(foundDupContracts) {
+        let resultObj = {
+            status: false,
+            index: 0
+        }
+        for(let i = 0; i < foundDupContracts.length; i++) {
+            // Check if the contract chain ID is duplicated
+            if(foundDupContracts[i].chainId == chainId) {
+                resultObj.status = true;// Duplicated
+                resultObj.index = foundDupContracts[i].index;
+                return resultObj;
+            }
+        }
+        return resultObj;
+    } else {
+        return {
+            status: false
+        }
+    }
 }

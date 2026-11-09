@@ -18,7 +18,6 @@ import { r } from '../../bin/cli.js';
 import { createContractProxy } from '../utils/contractProxy.js';
 import { eventOf } from '../utils/event.js';
 import {
-    updateContractJSON,
     getContractJSON,
     appendContract
 } from '../utils/contractLister.js';
@@ -229,13 +228,58 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
         // Store the contract record on shell memory (contracts array) and storage (contracts.json)
         result.index = appendContract(contractRecord, result.proxiedContract);
 
-        return result;
+        // Destruct result to omit proxiedContract to return
+        const {proxiedContract, ...rest} = result;
+
+        return rest;
     } catch(err) {
         console.error(err);
         throw err;
     }
 }
 
+/**
+ * Instantiates an existing contract and registers its proxy in the REPL.
+ *
+ * Resolves the provider, wallet, and ABI; creates a proxied ethers contract;
+ * attaches shell metadata; and adds a contract reference to the selected
+ * wallet's in-memory contract list.
+ *
+ * Does not append to the contract registry or write contracts.json.
+ * The caller must assign the final registry index when adding a contract,
+ * or restore the saved index when reinstantiating one.
+ *
+ * @private
+ * @async
+ * @param {string} contractName
+ *   Name used for REPL registration and local-storage ABI lookup.
+ * @param {string} contractAddr
+ *   Address of the existing deployed contract.
+ * @param {number} [accIndex]
+ *   Wallet index. Defaults to configFile.defaultWallet.index.
+ * @param {string} [abiLoc]
+ *   ABI JSON file path. Defaults to the local-storage entry
+ *   `${contractName}_abi`.
+ * @param {string} [chain]
+ *   JSON-RPC URL. Defaults to the currently configured provider.
+ * @returns {Promise<{
+ *   index: number,
+ *   name: string,
+ *   address: string,
+ *   chain: string,
+ *   chainId: bigint,
+ *   deployType: string,
+ *   provider: import('ethers').JsonRpcProvider,
+ *   abiPath: string,
+ *   proxiedContract: import('ethers').Contract
+ * }>}
+ *   Contract metadata, the resolved ABI path, and the registered proxy.
+ *   The returned index is provisional until the caller appends the record
+ *   or restores its saved index.
+ * @throws {Error}
+ *   Rejects if the address is missing, the wallet or ABI cannot be loaded,
+ *   provider communication fails, or contract initialization fails.
+ */
 async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
     let currentProvider;
     let connectedChain;

@@ -21,6 +21,7 @@ import {
     getContractJSON,
     appendContract
 } from '../utils/contractLister.js';
+import { serializeBigInts } from '../utils/serialize.js';
 
 /**
  * Local storage instance for persisting contract metadata
@@ -33,6 +34,12 @@ const localStorage = new LocalStorage('./ethershell');
  * @type {Map<string, ethers.Contract>}
  */
 export const contracts = getContractJSON();
+
+/**
+ * The path which in contracts json file will be saved.
+ * @type {String}
+ */
+const contractsJSONPath = './ethershell/contracts.json';
 
 /**
  * Instantiate stored contracts to interact with the shell
@@ -235,6 +242,32 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
     } catch(err) {
         console.error(err);
         throw err;
+    }
+}
+
+/**
+ * Remove the selected contract from memory and storage
+ * @param {number} contPointer 
+ */
+export async function remove(contPointer) {
+    // Validation the pointer
+    if(typeof contPointer === 'number') {
+        if(0 <= contPointer && contPointer < contracts.length) {
+            // Remove the contract from contracts array and update it
+            contracts.splice(contPointer, 1);
+            // Update contract index
+            for(let i = contPointer; i < contracts.length; i++) {
+                contracts[i].index = i;
+            }
+            // Update contracts.json file
+            const contractsObj = serializeBigInts(contracts);
+            fs.writeFileSync(contractsJSONPath, JSON.stringify(contractsObj, null, 2));
+            console.log(`Contract removed successfully. Memory and storage updated!`);
+        } else{
+            throw `The contract index is INVALID. Index must be between 0 and ${contracts.length - 1} `;
+        }
+    } else{
+        throw `Only contract index is valid. Your input (${contPointer}) is NOT index`;
     }
 }
 

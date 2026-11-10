@@ -298,7 +298,6 @@ export function deleteAccount(accPointer) {
         }
 
         return allAccounts;
-        return;
     }
 }
 

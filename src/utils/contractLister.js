@@ -105,6 +105,12 @@ export function appendContract(contractRecord, proxiedContract) {
     return index;
 }
 
+/**
+ * Checks if an added contract deployed/added before or not.
+ * @param {string} contractAddr 
+ * @param {string} chainId 
+ * @returns {Object} 
+ */
 function detectDupContract(contractAddr, chainId) {
     // Check if contract address is duplicated
     const foundDupContracts = contracts.filter(contract => contract.address == contractAddr);

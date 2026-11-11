@@ -13,7 +13,6 @@ import {
     configFile
  } from './configSync.js';
 import { allAccounts } from './wallet.js';
-import { LocalStorage } from 'node-localstorage';
 import { r } from '../../bin/cli.js';
 import { createContractProxy } from '../utils/contractProxy.js';
 import { eventOf } from '../utils/event.js';
@@ -22,12 +21,7 @@ import {
     appendContract
 } from '../utils/contractLister.js';
 import { serializeBigInts } from '../utils/serialize.js';
-
-/**
- * Local storage instance for persisting contract metadata
- * @type {LocalStorage}
- */
-const localStorage = new LocalStorage('./ethershell');
+import { buildJSONPath } from '../utils/builder.js';
 
 /**
  * Map of all deployed and added contracts
@@ -110,8 +104,9 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
         connectedChain = await currentProvider.getNetwork();
 
-        const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
-        const bytecodePath = bytecodeLoc || localStorage.getItem(`${contractName}_bytecode`);
+        const buildJSON = JSON.parse(fs.readFileSync(buildJSONPath));
+        const abiPath = abiLoc || buildJSON[`${contractName}_abi`];
+        const bytecodePath = bytecodeLoc || buildJSON[`${contractName}_bytecode`];
 
         const abi  = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
         const bytecode = JSON.parse(fs.readFileSync(bytecodePath, 'utf8'));
@@ -170,8 +165,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
         // Store the contract record on shell memory (contracts array) and storage (contracts.json)
         const contractIndex = appendContract(contractRecord, proxiedContract);
 
-        // Update index of the contract instance
+        // Assign the final registry index to both instances
         deployTx._contractIndex = contractIndex;
+        proxiedContract._contractIndex = contractIndex;
+
+        // Expose the deployed contract in the interactive console
+        r.context[contractName] = proxiedContract;
 
         ////////////////////////////////////////////
 
@@ -335,7 +334,8 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
     wallet = new ethers.Wallet(allAccounts[accIndex].privateKey, currentProvider);
     connectedChain = await currentProvider.getNetwork();
 
-    const abiPath = abiLoc || localStorage.getItem(`${contractName}_abi`);
+    const buildJSON = JSON.parse(fs.readFileSync(buildJSONPath));
+    const abiPath = abiLoc || buildJSON[`${contractName}_abi`];
     const abi  = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
     const newContract = new ethers.Contract(contractAddr, abi, wallet);

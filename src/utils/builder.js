@@ -10,13 +10,11 @@ import fs from 'fs';
 import solc from 'solc';
 import { check, findImports } from './dir.js';
 import { getCompilerOptions } from '../services/build.js';
-import { LocalStorage } from 'node-localstorage';
 
 /**
- * Local storage instance for persisting compiler artifacts paths
- * @type {LocalStorage}
+ * The path of build.json to store ABIs & bytecodes paths
  */
-const localStorage = new LocalStorage('./ethershell');
+export const buildJSONPath = "./ethershell/build.json";
 
 /**
  * Load a specific version of the Solidity compiler
@@ -145,7 +143,10 @@ export function build(fullPath, selectedContracts, buildPath) {
           selectedContracts.includes(contractName)
         )
       : allContracts;
-
+  // Object to collect all paths
+  const buildObj = fs.existsSync(buildJSONPath)
+  ? JSON.parse(fs.readFileSync(buildJSONPath, 'utf8'))
+  : {};
   contractsToSave.forEach((contractName) => {
     const contractsData = output.contracts[`${filename}`][contractName];
 
@@ -178,10 +179,18 @@ export function build(fullPath, selectedContracts, buildPath) {
     );
     fs.writeFileSync(standardJsonPath, JSON.stringify(input, null, 2));
 
-    // Store ABIs and bytecode in local storage
-    localStorage.setItem(`${contractName}_abi`, abisPath);
-    localStorage.setItem(`${contractName}_bytecode`, bytecodePath);
+    buildObj[`${contractName}_abi`] = abisPath;
+    buildObj[`${contractName}_bytecode`] = bytecodePath;
   });
+  
+  // Store ABIs and bytecode in build.json  
+  fs.mkdirSync(path.dirname(buildJSONPath), { recursive: true });
+
+  fs.writeFileSync(
+    buildJSONPath,
+    JSON.stringify(buildObj, null, 2),
+    'utf8'
+  );
 }
 
 /**

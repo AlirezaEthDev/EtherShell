@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo/White.png" alt="The logo of EtherShell" width="300">
+</p>
+
 # 🔷 EtherShell - Interactive Ethereum Smart Contract Console
 
 **⚠️ WARNING: This package is in BETA testing. NOT production ready!**

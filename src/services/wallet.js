@@ -74,8 +74,7 @@ export function addAccounts(privKeyArr) {
             index: allAccounts.length,
             address: newAccount.address,
             privateKey: privKeyArr,
-            type: 'user-imported',
-            contracts: []
+            type: 'user-imported'
         }
         allAccounts.push(newAccObj);
         updateWalletJSON(allAccounts);
@@ -90,8 +89,7 @@ export function addAccounts(privKeyArr) {
             newAccObj = {
                 index: allAccounts.length,
                 address: newAccount.address,
-                privateKey: privKey,
-                contracts: []
+                privateKey: privKey
             }
             allAccounts.push(newAccObj);
             updateWalletJSON(allAccounts);
@@ -134,8 +132,7 @@ export function addHD(phrase, count = 10) {
                 privateKey: hdWallet.privateKey,
                 type: 'user-imported',
                 path: hdWallet.path,
-                depth: hdWallet.depth,
-                contracts: []
+                depth: hdWallet.depth
             },
             allAccounts.push(newAccObj);
             newAccObj.index = allAccounts.length - 1;
@@ -164,8 +161,7 @@ export function createAccounts(count = 1) {
             index: allAccounts.length,
             address:  newAccounts[i].address,
             privateKey: newAccounts[i].privateKey,
-            type: 'user-generated',
-            contracts: []
+            type: 'user-generated'
         }
         allAccounts.push(newAccObj);
         newAccObj.index = allAccounts.length - 1;
@@ -197,11 +193,8 @@ export function createHD(count = 10) {
             phrase: hdWallet.mnemonic.phrase,
             privateKey: hdWallet.privateKey,
             type: 'user-generated',
-            nonce: 0,
-            balance: 0,
             path: hdWallet.path,
-            depth: hdWallet.depth,
-            contracts: []
+            depth: hdWallet.depth
         }
         allAccounts.push(newAccObj);
         newAccObj.index = allAccounts.length - 1;
@@ -398,8 +391,7 @@ export function changeDefaultAccount(accPointer) {
                 index: allAccounts.length,
                 address: newAccount.address,
                 privateKey: accPointer,
-                type: 'user-imported',
-                contracts: []
+                type: 'user-imported'
             }
             allAccounts.push(newAccObj);
             accounts.push(newAccObj);

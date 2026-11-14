@@ -16,24 +16,21 @@ import { allAccounts } from './wallet.js';
 import { r } from '../../bin/cli.js';
 import { createContractProxy } from '../utils/contractProxy.js';
 import { eventOf } from '../utils/event.js';
-import {
-    getContractJSON,
-    appendContract
-} from '../utils/contractLister.js';
+import { appendContract } from '../utils/contractLister.js';
 import { serializeBigInts } from '../utils/serialize.js';
 import { buildJSONPath } from '../utils/builder.js';
+import { w2cObj } from './contracts.js';
+import { 
+    getContractJSON,
+    contractsJSONPath,
+    w2CJSONPath
+} from '../utils/contractStorage.js'
 
 /**
  * Map of all deployed and added contracts
  * @type {Map<string, ethers.Contract>}
  */
 export const contracts = getContractJSON();
-
-/**
- * The path which in contracts json file will be saved.
- * @type {String}
- */
-const contractsJSONPath = './ethershell/contracts.json';
 
 /**
  * Instantiate stored contracts to interact with the shell
@@ -122,7 +119,12 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
             chainId: connectedChain.chainId
         }
 
-        allAccounts[accIndex].contracts.push(contSpec);
+        // Save on wallet2contract.json
+        if (!Array.isArray(w2cObj[wallet.address])) {
+            w2cObj[wallet.address] = [];
+        }
+        w2cObj[wallet.address].push(contSpec);
+        fs.writeFileSync(w2CJSONPath, JSON.stringify(serializeBigInts(w2cObj), null, 2));
 
         // Decorate contract instance with metadata
         deployTx._contractName = contractName;
@@ -374,7 +376,9 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
         chainId: connectedChain.chainId
     }
 
-    allAccounts[accIndex].contracts.push(contSpec);
+    // Save on wallet2contract.json
+    w2cObj[wallet.address].push(contSpec);
+    fs.writeFileSync(w2CJSONPath, JSON.stringify(serializeBigInts(w2cObj), null, 2));
 
     // Decorate contract instance with metadata
     newContract._contractIndex = contracts.length;

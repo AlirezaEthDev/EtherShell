@@ -6,14 +6,8 @@
  */
 
 import { contracts } from '../services/addContracts.js';
-import fs from 'fs';
-import { serializeBigInts } from './serialize.js'
 import { provider } from '../services/configSync.js';
-
-/**
- * 
- */
-const contractJSONPath = './ethershell/contracts.json';
+import { updateContractJSON } from './contractStorage.js';
 
 /**
  * Get array of all contracts with their information
@@ -44,40 +38,6 @@ export async function getContArr() {
     }
 
     return contractsArray;
-}
-
-/**
- * Writes/Updates contracts json file
- * @param {Array<string>} contractArr - Contract array
- * @example
- * updateContractJSON([{
-                ...
-        }]);
- */
-export function updateContractJSON(contractArr) {
-    const contractObj = serializeBigInts(contractArr);
-    fs.writeFileSync(contractJSONPath, JSON.stringify(contractObj, null, 2));
-}
-
-/**
- * Returns pre-added/deployed contracts' objects from saved json file
- * @returns {Object}
- */
-export function getContractJSON(){
-    if(fs.existsSync(contractJSONPath)){
-        const contractJSON = fs.readFileSync(contractJSONPath, 'utf8');
-        // Return empty array if contratcs.json is empty
-        if(contractJSON.length === 0) {
-            return [];
-        } else {
-            return JSON.parse(fs.readFileSync(contractJSONPath));
-        }
-    } else {
-        // Generate empty contracts.json if it doesn't exist
-        const fd = fs.openSync(contractJSONPath, 'w');
-        fs.closeSync(fd);
-        return [];
-    }
 }
 
 /**

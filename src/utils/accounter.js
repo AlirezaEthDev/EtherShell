@@ -10,6 +10,8 @@ import { provider } from '../services/configSync.js';
 import fs from 'fs';
 import { configFile, configPath } from '../services/configSync.js';
 import { serializeBigInts } from './serialize.js';
+import { w2cObj } from '../services/contracts.js';
+import { returnArrJSON } from './contractStorage.js';
 
 /**
  * The path which in wallets json file will be saved.
@@ -115,20 +117,7 @@ export function updateWalletJSON(walletArr) {
  * @returns {Object}
  */
 export function getWalletJSON() {
-    if(fs.existsSync(walletJSONPath)){
-        const walletJSON = fs.readFileSync(walletJSONPath, 'utf8');
-        // Return empry array if wallet is empty
-        if(walletJSON.length === 0) {
-            return [];
-        } else {
-            return JSON.parse(fs.readFileSync(walletJSONPath));
-        }
-    } else {
-        // Generate empty wallet.json if it doesn't exist
-        const fd = fs.openSync(walletJSONPath, 'w');
-        fs.closeSync(fd);
-        return [];
-    }
+    return returnArrJSON(walletJSONPath);
 }
 
 export function updateAccountMemory(allAccArr) {
@@ -177,10 +166,21 @@ async function _getAccArrInfo(_indices) {
  * @returns {Promise<void>}
  */
 async function _getAccountInfo(_index) {
-    const accInfo = allAccounts[_index];
-    
+    const accInfo = {
+        index: allAccounts[_index].index,
+        address: allAccounts[_index].address,
+        privateKey: allAccounts[_index].privateKey,
+        type: allAccounts[_index].type,
+        nonce: 0,
+        balance: 0,
+        deployedContracts: '0x'
+    }
     accInfo.nonce = await provider.getTransactionCount(accInfo.address);
     accInfo.balance = await provider.getBalance(accInfo.address);
+    if(!Array.isArray(w2cObj[accInfo.address])) {
+        w2cObj[accInfo.address] = [];
+    }
+    accInfo.deployedContracts = w2cObj[accInfo.address];
 
     return accInfo;
 }

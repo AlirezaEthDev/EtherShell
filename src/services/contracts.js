@@ -7,6 +7,12 @@
 
 import { ethers } from 'ethers';
 import { getContArr } from '../utils/contractLister.js';
+import { getW2CJSON } from '../utils/contractStorage.js';
+
+/**
+ * Object containing all deployer wallets and their deployed contracts
+ */
+export const w2cObj = getW2CJSON();
 
 /**
  * Get contract(s) information

@@ -39,6 +39,8 @@ import {
 import { deploy, add, restore, remove } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 import { getConfigInfo, getDefaultAccount } from '../src/services/configSync.js';
+import { changeDir, currentDir, listDir } from '../src/services/directory.js';
+
 
 /**
  * REPL instance for EtherShell interactive environment
@@ -99,3 +101,14 @@ r.context.addContract = add;
 r.context.contracts = getContracts;
 r.context.restoreContract = restore;
 r.context.removeContract = remove;
+
+// Directory
+r.context.where = currentDir;
+r.context.cd = changeDir; 
+r.context.ls = listDir;
+
+// Exit EtherShell
+r.context.exit = () => {
+    console.log(`Goodbye \u{1F44B}`);
+    r.close();
+}

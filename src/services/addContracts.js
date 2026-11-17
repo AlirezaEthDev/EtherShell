@@ -30,12 +30,12 @@ import {
  * Map of all deployed and added contracts
  * @type {Map<string, ethers.Contract>}
  */
-export const contracts = getContractJSON();
+export let contracts = getContractJSON();
 
 /**
  * Instantiate stored contracts to interact with the shell
  */
-export async function restore() {
+export async function restoreContract() {
   if (contracts.length === 0) {
     return 'The storage is empty!';
   }
@@ -215,7 +215,7 @@ export async function deploy(contractName, args, accIndex, chain, abiLoc, byteco
  * @example
  * add('USDT', '0xdac17f958d2ee523a2206206994597c13d831ec7', 0, './abis/USDT.json');
  */
-export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
+export async function addContract(contractName, contractAddr, accIndex, abiLoc, chain) {
     try {
         const result = await _add(contractName, contractAddr, accIndex, abiLoc, chain);
         
@@ -247,28 +247,42 @@ export async function add(contractName, contractAddr, accIndex, abiLoc, chain) {
 }
 
 /**
- * Remove the selected contract from memory and storage
+ * Remove the selected contracts from memory and storage
  * @param {number} contPointer 
  */
-export async function remove(contPointer) {
-    // Validation the pointer
-    if(typeof contPointer === 'number') {
-        if(0 <= contPointer && contPointer < contracts.length) {
-            // Remove the contract from contracts array and update it
-            contracts.splice(contPointer, 1);
-            // Update contract index
-            for(let i = contPointer; i < contracts.length; i++) {
-                contracts[i].index = i;
+export async function deleteContract(contPointer) {
+    if(!contPointer) {
+        // Remove all contracts from array
+        contracts = [];
+        // Update contracts.json
+        fs.writeFileSync(contractsJSONPath, JSON.stringify(contracts, null, 2));
+        console.log(`All contracts removed successfully. Memory and storage updated!`);
+    } else {
+        // Validation the pointer
+        if(typeof contPointer === 'number') {
+            if(0 <= contPointer && contPointer < contracts.length) {
+                _deleteContract(contPointer);
+            } else{
+                throw `The contract index is INVALID. Index must be between 0 and ${contracts.length - 1} `;
             }
-            // Update contracts.json file
-            const contractsObj = serializeBigInts(contracts);
-            fs.writeFileSync(contractsJSONPath, JSON.stringify(contractsObj, null, 2));
-            console.log(`Contract removed successfully. Memory and storage updated!`);
+        } else if (Array.isArray(contPointer)) {
+            // Sort indices in descending order to avoid shifting issues
+            const sortedIndices = [...contPointer].sort((a, b) => b - a);
+            // Delete each index from highest to lowest
+            sortedIndices.map(contIndex => {
+                if(typeof contIndex === 'number') {
+                    _deleteContract(contIndex);
+                } else {
+                    throw `Only contract index is valid. Your input (${contPointer}) is NOT index`;
+                }
+            })
         } else{
-            throw `The contract index is INVALID. Index must be between 0 and ${contracts.length - 1} `;
+            throw `Only contract index or index array is valid. Your input (${contPointer}) is NOT valid`;
         }
-    } else{
-        throw `Only contract index is valid. Your input (${contPointer}) is NOT index`;
+        // Update contracts.json file
+        const contractsObj = serializeBigInts(contracts);
+        fs.writeFileSync(contractsJSONPath, JSON.stringify(contractsObj, null, 2));
+        console.log(`Contract removed successfully. Memory and storage updated!`);
     }
 }
 
@@ -402,4 +416,17 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
     }
 
     return result;
+}
+
+/**
+ * Remove the selected contract from memory and storage
+ * @param {number} contPointer 
+ */
+function _deleteContract(contPointer) {
+    // Remove the contract from contracts array and update it
+    contracts.splice(contPointer, 1);
+    // Update contract index
+    for(let i = contPointer; i < contracts.length; i++) {
+        contracts[i].index = i;
+    }
 }

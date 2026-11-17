@@ -4,7 +4,7 @@
 
 <h1 align="center">EtherShell</h1>
 <h1 align="center">Interactive Ethereum Smart Contract Console</h1>
-<h2 align="center">⚠️ WARNING: This package is in BETA testing NOT production ready ⚠️</h2>
+<h2 align="center">⚠️ WARNING: This package is in BETA testing, NOT production ready ⚠️</h2>
 
 An interactive Node.js console for Ethereum smart contract development. Write, compile, deploy, and manage smart contracts directly from the shell with an intuitive, Solidity-focused developer experience.
 

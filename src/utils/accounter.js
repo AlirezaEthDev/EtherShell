@@ -172,11 +172,16 @@ async function _getAccountInfo(_index) {
         privateKey: allAccounts[_index].privateKey,
         type: allAccounts[_index].type,
         nonce: 0,
-        balance: 0,
-        deployedContracts: '0x'
+        balance: 0
     }
     accInfo.nonce = await provider.getTransactionCount(accInfo.address);
     accInfo.balance = await provider.getBalance(accInfo.address);
+    // For HD account
+    if(allAccounts[_index].phrase) {
+        accInfo.phrase = allAccounts[_index].phrase;
+        accInfo.path = allAccounts[_index].path;
+        accInfo.depth = allAccounts[_index].depth;
+    }
     if(!Array.isArray(w2cObj[accInfo.address])) {
         w2cObj[accInfo.address] = [];
     }

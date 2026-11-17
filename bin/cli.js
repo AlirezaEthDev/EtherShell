@@ -36,7 +36,7 @@ import {
     changeDefaultAccount
     } from '../src/services/wallet.js';
 
-import { deploy, add, restore, remove } from '../src/services/addContracts.js';
+import { deploy, addContract, restoreContract, deleteContract } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 import { getConfigInfo, getDefaultAccount } from '../src/services/configSync.js';
 import { changeDir, currentDir, listDir } from '../src/services/directory.js';
@@ -95,12 +95,12 @@ r.context.walletInfo = getWalletInfo
 
 // Add contract
 r.context.deploy = deploy;
-r.context.addContract = add;
+r.context.addContract = addContract;
 
 // Contract
 r.context.contracts = getContracts;
-r.context.restoreContract = restore;
-r.context.removeContract = remove;
+r.context.restoreContract = restoreContract;
+r.context.removeContract = deleteContract;
 
 // Directory
 r.context.where = currentDir;

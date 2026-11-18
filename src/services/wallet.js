@@ -18,6 +18,10 @@ import {
     updateAccountMemory,
     setDefaultAccount
  } from '../utils/accounter.js';
+ import { w2CJSONPath } from '../utils/contractStorage.js';
+ import { w2cObj } from './contracts.js';
+ import fs from 'fs';
+ import { serializeBigInts } from '../utils/serialize.js';
 
 /**
  * Array containing all accounts (imported, generated, HD, and node-managed)
@@ -249,12 +253,10 @@ export function getHDAccounts() {
 export function deleteAccount(accPointer) {
     if(!accPointer && accPointer !== 0) {
         deleteByIndex(null);
-        return allAccounts;
     }
 
     if(typeof accPointer === 'number') {
         deleteByIndex(accPointer);
-        return allAccounts;
     }
 
     if(ethers.isAddress(accPointer)) {
@@ -263,12 +265,10 @@ export function deleteAccount(accPointer) {
         if(index !== -1) {
             deleteByIndex(index);
         }
-        return allAccounts;
     }
 
     if(Array.isArray(accPointer)) {
         deleteByIndexArr(accPointer);
-        return allAccounts;
     }
 
     if(ethers.Mnemonic.isValidMnemonic(accPointer)) {
@@ -289,9 +289,9 @@ export function deleteAccount(accPointer) {
         for(let i = 0; i < indicesToDelete.length; i++) {
             deleteByIndex(indicesToDelete[i]);
         }
-
-        return allAccounts;
     }
+    fs.writeFileSync(w2CJSONPath, JSON.stringify(serializeBigInts(w2cObj), null, 2));
+    return allAccounts
 }
 
 /**

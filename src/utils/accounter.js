@@ -200,6 +200,9 @@ function _deleteBySingIndex(_index) {
 
     // Find and remove from allAccounts
     const accountIndex = allAccounts.findIndex(acc => acc.index === _index);
+    // Remove from wallet2contract memory
+    delete w2cObj[allAccounts[accountIndex].address];
+
     if (accountIndex !== -1) {
         allAccounts.splice(accountIndex, 1);
         

@@ -162,7 +162,7 @@ export function build(fullPath, selectedContracts, buildPath) {
     const bytecodePath = path.join(bytecode, `${contractName}.bin`);
     fs.writeFileSync(
       bytecodePath,
-      JSON.stringify(contractsData.evm.bytecode, null, 2)
+      JSON.stringify(contractsData.evm.bytecode.object, null, 2)
     );
 
     // Save metadata

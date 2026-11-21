@@ -159,27 +159,36 @@ export function compile(fullPath, selectedContracts, buildPath){
 ////////////////////
   // Generate aggregated ABI after compilation
   const abisDir = path.join(buildPath, 'abis');
-  const aggregatedAbiPath = path.join(buildPath, 'aggregated.abi.json');
+  const aggregatedAbiPath = path.join(abisDir, 'aggregated.abi.json');
 
   if (fs.existsSync(abisDir)) {
-    const files = fs.readdirSync(abisDir).filter(f => f.endsWith('.abi.json'));
+    const files = fs.readdirSync(abisDir)
+      .filter((f) => f.endsWith('.abi.json') && f !== 'aggregated.abi.json');
 
-    const aggregated = [];
+    const aggregated = {};
+
     for (const file of files) {
-      const p = path.join(abisDir, file);
+      const contractName = file.replace(/\.abi\.json$/, '');
+      const filePath = path.join(abisDir, file);
+
       try {
-        const abi = JSON.parse(fs.readFileSync(p, 'utf8'));
+        const abi = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
         if (Array.isArray(abi)) {
-          aggregated.push(...abi);
+          aggregated[contractName] = abi;
         } else {
           console.warn(`ABI file ${file} is not an array, skipping from aggregation`);
         }
-      } catch (e) {
-        console.warn(`Failed to read ABI file ${file} for aggregation: ${e.message}`);
+      } catch (error) {
+        console.warn(`Failed to read ABI file ${file}: ${error.message}`);
       }
     }
 
-    fs.writeFileSync(aggregatedAbiPath, JSON.stringify(aggregated, null, 2));
+    fs.writeFileSync(
+      aggregatedAbiPath,
+      JSON.stringify(aggregated, null, 2)
+    );
+
     console.log('Aggregated ABI generated at', path.resolve(aggregatedAbiPath));
   } else {
     console.warn('No ABI directory found, aggregated ABI not generated.');

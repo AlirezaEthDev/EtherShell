@@ -17,6 +17,12 @@ import fs from 'fs';
  */
 export function generateContractTypes(contractName, abi, outputPath) {
   try {
+    // Ensure input is ABI array
+    if (!Array.isArray(abi)) {
+      throw new TypeError(
+        `Cannot generate types for "${contractName}": expected an ABI array`
+      );
+    }
     // Ensure output directory exists
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
@@ -36,32 +42,60 @@ export function generateContractTypes(contractName, abi, outputPath) {
 }
 
 /**
- * Generate all TypeScript types from build artifacts
- * @param {string} buildPath - Path to build directory with ABIs
- * @param {string} typesOutputPath - Output directory for TypeScript types
- * @returns {Array} Array of generated type file paths
+ * Generate TypeScript types from individual contract ABI files.
+ *
+ * aggregated.abi.json is a contract-name-to-ABI map, not a single ABI,
+ * so it is deliberately excluded.
+ *
+ * @param {string} buildPath
+ * @param {string} typesOutputPath
+ * @returns {string[]} Generated contract type file paths
  */
-export function generateAllTypes(buildPath, typesOutputPath = './src/types') {
+export function generateAllTypes(
+  buildPath,
+  typesOutputPath = './src/types'
+) {
   try {
     const abisPath = path.join(buildPath, 'abis');
-    
+
     if (!fs.existsSync(abisPath)) {
       throw new Error(`ABIs directory not found at ${abisPath}`);
     }
 
-    const abiFiles = fs.readdirSync(abisPath).filter(f => f.endsWith('.abi.json'));
+    fs.mkdirSync(typesOutputPath, { recursive: true });
+
+    const abiFiles = fs.readdirSync(abisPath, { withFileTypes: true })
+      .filter(
+        (entry) =>
+          entry.isFile() &&
+          entry.name.endsWith('.abi.json') &&
+          entry.name !== 'aggregated.abi.json'
+      )
+      .map((entry) => entry.name)
+      .sort();
+
     const generatedFiles = [];
 
-    abiFiles.forEach(file => {
-      const contractName = file.replace('.abi.json', '');
+    for (const file of abiFiles) {
+      const contractName = file.replace(/\.abi\.json$/, '');
       const abiPath = path.join(abisPath, file);
       const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
-      
-      const typePath = generateContractTypes(contractName, abi, typesOutputPath);
-      generatedFiles.push(typePath);
-    });
 
-    // Generate index.ts for barrel export
+      if (!Array.isArray(abi)) {
+        throw new TypeError(
+          `Invalid ABI in ${abiPath}: expected an ABI array`
+        );
+      }
+
+      const typePath = generateContractTypes(
+        contractName,
+        abi,
+        typesOutputPath
+      );
+
+      generatedFiles.push(typePath);
+    }
+
     generateIndexFile(typesOutputPath, abiFiles);
 
     return generatedFiles;

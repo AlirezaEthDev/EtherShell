@@ -194,12 +194,14 @@ export function compile(fullPath, selectedContracts, buildPath){
     console.warn('No ABI directory found, aggregated ABI not generated.');
   }
 
+  // Generate aggregated bytecode after compilation
+  generateAggregatedBytecodes(buildPath);
 ////////////////////
 
-    // Generate TypeScript types
-    const typesOutputPath = path.join(buildPath, 'types');
-    generateAllTypes(buildPath, typesOutputPath);
-    console.log(`TypeScript types generated in ${path.resolve(typesOutputPath)}`);
+  // Generate TypeScript types
+  const typesOutputPath = path.join(buildPath, 'types');
+  generateAllTypes(buildPath, typesOutputPath);
+  console.log(`TypeScript types generated in ${path.resolve(typesOutputPath)}`);
   } catch(err){
       console.error(err);
   }
@@ -323,4 +325,72 @@ function parseImports(content) {
     if (importPath) imports.push(importPath);
   }
   return imports;
+}
+
+/**
+ * Merge individual JSON-encoded .bin files into one
+ * contract-name-to-bytecode JSON object.
+ *
+ * Reads all .bin files currently present in the bytecode directory,
+ * including artifacts from previous compilations.
+ *
+ * @param {string} buildPath - Compilation output directory
+ * @returns {string|null} Aggregated file path, or null if the directory is missing
+ * @throws {Error} If a bytecode file cannot be read or is not a JSON string
+ */
+function generateAggregatedBytecodes(buildPath) {
+  const bytecodeDir = path.join(buildPath, 'bytecode');
+  const aggregatedBytecodePath = path.join(
+    bytecodeDir,
+    'aggregated.bytecode.json'
+  );
+
+  if (!fs.existsSync(bytecodeDir)) {
+    console.warn(
+      'No bytecode directory found, aggregated bytecode not generated.'
+    );
+    return null;
+  }
+
+  const files = fs.readdirSync(bytecodeDir, { withFileTypes: true })
+    .filter(
+      (entry) => entry.isFile() && entry.name.endsWith('.bin')
+    )
+    .map((entry) => entry.name)
+    .sort();
+
+  const aggregated = Object.create(null);
+
+  for (const file of files) {
+    const contractName = file.replace(/\.bin$/, '');
+    const filePath = path.join(bytecodeDir, file);
+
+    // builder.js saves .bin files using JSON.stringify(...).
+    const bytecode = JSON.parse(
+      fs.readFileSync(filePath, 'utf8')
+    );
+
+    if (typeof bytecode !== 'string') {
+      throw new TypeError(
+        `Invalid bytecode in ${filePath}: expected a JSON string`
+      );
+    }
+
+    // Preserve the compiler output exactly, including empty bytecode
+    // and any library-linking placeholders.
+    aggregated[contractName] = bytecode;
+  }
+
+  fs.writeFileSync(
+    aggregatedBytecodePath,
+    JSON.stringify(aggregated, null, 2),
+    'utf8'
+  );
+
+  console.log(
+    'Aggregated bytecode generated at',
+    path.resolve(aggregatedBytecodePath)
+  );
+
+  return aggregatedBytecodePath;
 }

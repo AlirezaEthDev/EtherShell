@@ -39,7 +39,13 @@ import {
 import { deploy, addContract, restoreContract, deleteContract } from '../src/services/addContracts.js';
 import { getContracts } from '../src/services/contracts.js';
 import { getConfigInfo, getDefaultAccount } from '../src/services/configSync.js';
-import { changeDir, currentDir, listDir } from '../src/services/directory.js';
+import {
+    changeDir,
+    currentDir,
+    listDir,
+    pushd,
+    popd
+} from '../src/services/directory.js';
 
 
 /**
@@ -104,8 +110,10 @@ r.context.removeContract = deleteContract;
 
 // Directory
 r.context.where = currentDir;
-r.context.cd = changeDir; 
+r.context.cd = changeDir;
 r.context.ls = listDir;
+r.context.pushd = pushd;
+r.context.popd = popd;
 
 // Exit EtherShell
 r.context.exit = () => {

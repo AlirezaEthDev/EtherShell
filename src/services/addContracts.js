@@ -247,43 +247,69 @@ export async function addContract(contractName, contractAddr, accIndex, abiLoc, 
 }
 
 /**
- * Remove the selected contracts from memory and storage
- * @param {number} contPointer 
+ * Remove the selected contract(s) from memory, contracts.json,
+ * and wallet2contract.json.
+ * @param {number|number[]} contPointer
  */
 export async function deleteContract(contPointer) {
-    if(!contPointer) {
+    if (!contPointer) {
         // Remove all contracts from array
         contracts = [];
+
         // Update contracts.json
-        fs.writeFileSync(contractsJSONPath, JSON.stringify(contracts, null, 2));
-        console.log(`All contracts removed successfully. Memory and storage updated!`);
-    } else {
-        // Validation the pointer
-        if(typeof contPointer === 'number') {
-            if(0 <= contPointer && contPointer < contracts.length) {
-                _deleteContract(contPointer);
-            } else{
-                throw `The contract index is INVALID. Index must be between 0 and ${contracts.length - 1} `;
-            }
-        } else if (Array.isArray(contPointer)) {
-            // Sort indices in descending order to avoid shifting issues
-            const sortedIndices = [...contPointer].sort((a, b) => b - a);
-            // Delete each index from highest to lowest
-            sortedIndices.map(contIndex => {
-                if(typeof contIndex === 'number') {
-                    _deleteContract(contIndex);
-                } else {
-                    throw `Only contract index is valid. Your input (${contPointer}) is NOT index`;
-                }
-            })
-        } else{
-            throw `Only contract index or index array is valid. Your input (${contPointer}) is NOT valid`;
+        fs.writeFileSync(
+            contractsJSONPath,
+            JSON.stringify(contracts, null, 2)
+        );
+
+        // Remove all wallet-to-contract mappings
+        for (const walletAddress of Object.keys(w2cObj)) {
+            w2cObj[walletAddress] = [];
         }
-        // Update contracts.json file
-        const contractsObj = serializeBigInts(contracts);
-        fs.writeFileSync(contractsJSONPath, JSON.stringify(contractsObj, null, 2));
-        console.log(`Contract removed successfully. Memory and storage updated!`);
+
+        // Update wallet2contract.json
+        fs.writeFileSync(
+            w2CJSONPath,
+            JSON.stringify(serializeBigInts(w2cObj), null, 2)
+        );
+
+        console.log(`All contracts removed successfully. Memory and storage updated!`);
+        return;
     }
+
+    if (typeof contPointer === 'number') {
+        if (!(0 <= contPointer && contPointer < contracts.length)) {
+            throw `The contract index is INVALID.... Index must be between 0 and ${contracts.length - 1} `;
+        }
+
+        _deleteContract(contPointer);
+    } else if (Array.isArray(contPointer)) {
+        // Sort indices in descending order to avoid shifting issues
+        const sortedIndices = [...contPointer].sort((a, b) => b - a);
+
+        for (const contIndex of sortedIndices) {
+            if (typeof contIndex !== 'number') {
+                throw `Only contract index is valid. Your input (${contPointer}) is NOT index`;
+            }
+
+            if (!(0 <= contIndex && contIndex < contracts.length)) {
+                throw `The contract index is INVALID.... Index must be between 0 and ${contracts.length - 1} `;
+            }
+
+            _deleteContract(contIndex);
+        }
+    } else {
+        throw `Only contract index or index array is valid.... Your input (${contPointer}) is NOT valid`;
+    }
+
+    // Update contracts.json file
+    const contractsObj = serializeBigInts(contracts);
+    fs.writeFileSync(
+        contractsJSONPath,
+        JSON.stringify(contractsObj, null, 2)
+    );
+
+    console.log(`Contract removed successfully. Memory and storage updated!`);
 }
 
 /**
@@ -391,6 +417,9 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
     }
 
     // Save on wallet2contract.json
+    if (!Array.isArray(w2cObj[wallet.address])) {
+        w2cObj[wallet.address] = [];
+    }
     w2cObj[wallet.address].push(contSpec);
     fs.writeFileSync(w2CJSONPath, JSON.stringify(serializeBigInts(w2cObj), null, 2));
 
@@ -419,14 +448,60 @@ async function _add(contractName, contractAddr, accIndex, abiLoc, chain) {
 }
 
 /**
- * Remove the selected contract from memory and storage
- * @param {number} contPointer 
+ * Remove the selected contract from memory, contracts.json,
+ * and wallet2contract.json.
+ * @param {number} contPointer
  */
 function _deleteContract(contPointer) {
-    // Remove the contract from contracts array and update it
+    const removedContract = contracts[contPointer];
+
+    // Remove the contract from contracts array
     contracts.splice(contPointer, 1);
-    // Update contract index
-    for(let i = contPointer; i < contracts.length; i++) {
+
+    // Update remaining contract indexes
+    for (let i = contPointer; i < contracts.length; i++) {
         contracts[i].index = i;
+    }
+
+    // Remove the contract from wallet2contract.json by address
+    removeContractFromW2C(removedContract.address);
+}
+
+/**
+ * Removes a contract address from every wallet entry in
+ * wallet2contract.json and saves the updated file.
+ * @param {string} contractAddress
+ */
+function removeContractFromW2C(contractAddress) {
+    if (!contractAddress) {
+        return;
+    }
+
+    let removed = false;
+
+    for (const walletAddress of Object.keys(w2cObj)) {
+        const walletContracts = w2cObj[walletAddress];
+
+        if (!Array.isArray(walletContracts)) {
+            continue;
+        }
+
+        const filteredContracts = walletContracts.filter(
+            contract =>
+                String(contract.address).toLowerCase() !==
+                String(contractAddress).toLowerCase()
+        );
+
+        if (filteredContracts.length !== walletContracts.length) {
+            w2cObj[walletAddress] = filteredContracts;
+            removed = true;
+        }
+    }
+
+    if (removed) {
+        fs.writeFileSync(
+            w2CJSONPath,
+            JSON.stringify(serializeBigInts(w2cObj), null, 2)
+        );
     }
 }

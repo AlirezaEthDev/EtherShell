@@ -33,6 +33,8 @@ export function deleteByIndex(index) {
         deleteByIndexArr(index);
     } else if (typeof index === 'number') {
         _deleteBySingIndex(index);
+        // Update wallet json file
+        fs.writeFileSync(walletJSONPath, JSON.stringify(allAccounts, null, 2));
     } else if (index === null || index === undefined) {
         _deleteAll();
     }
@@ -58,6 +60,8 @@ export function deleteByIndexArr(indices) {
     for (const index of sortedIndices) {
         _deleteBySingIndex(index);
     }
+    // Update wallet json file
+    fs.writeFileSync(walletJSONPath, JSON.stringify(allAccounts, null, 2));
 }
 
 /**
@@ -193,49 +197,31 @@ async function _getAccountInfo(_index) {
  * @returns {void}
  */
 function _deleteBySingIndex(_index) {
-
-    // Find and remove from allAccounts
     const accountIndex = allAccounts.findIndex(acc => acc.index === _index);
-    // Remove from wallet2contract memory
-    delete w2cObj[allAccounts[accountIndex].address];
-
-    if (accountIndex !== -1) {
-        allAccounts.splice(accountIndex, 1);
-        
-        // Update indices in allAccounts
-        for (let i = accountIndex; i < allAccounts.length; i++) {
-            allAccounts[i].index = i;
-        }
-
-        // Update wallet json file
-        fs.writeFileSync(walletJSONPath, JSON.stringify(allAccounts, null, 2));
-        
-        // Remove from accounts array if it exists there
-        const regularIndex = accounts.findIndex(acc => acc.index === _index);
-        if (regularIndex !== -1) {
-            accounts.splice(regularIndex, 1);
-            // Update indices in accounts
-            for (let i = regularIndex; i < accounts.length; i++) {
-                accounts[i].index = _index;
-                _index++;
-            }
-        }
-        
-        // Remove from hdAccounts array if it exists there
-        const hdIndex = hdAccounts.findIndex(acc => acc.index === _index);
-        if (hdIndex !== -1) {
-            hdAccounts.splice(hdIndex, 1);
-            // Update indices in hdAccounts
-            for (let i = hdIndex; i < hdAccounts.length; i++) {
-                hdAccounts[i].index = _index;
-                _index++;
-            }
-        }
-
-        // Remove from config file if it is default wallet
-        if(accountIndex == configFile.defaultWallet.index) {
-            deleteDefaultAccount();
-        }
+    if (accountIndex === -1) {
+        console.error(`Error: Wallet index ${_index} is NOT valid!`);
+        return;
+    }
+    const removedAccount = allAccounts[accountIndex];
+    // Remove its contract mapping
+    delete w2cObj[removedAccount.address];
+    // Remove the exact same object from every account collection
+    allAccounts.splice(accountIndex, 1);
+    const regularIndex = accounts.indexOf(removedAccount);
+    if (regularIndex !== -1) {
+        accounts.splice(regularIndex, 1);
+    }
+    const hdIndex = hdAccounts.indexOf(removedAccount);
+    if (hdIndex !== -1) {
+        hdAccounts.splice(hdIndex, 1);
+    }
+    // Reindex only once; accounts and hdAccounts share these objects
+    allAccounts.forEach((account, index) => {
+        account.index = index;
+    });
+    // Clear default wallet only if the removed wallet was default
+    if (configFile.defaultWallet?.address === removedAccount.address) {
+        deleteDefaultAccount();
     }
 }
 

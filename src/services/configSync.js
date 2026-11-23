@@ -138,15 +138,18 @@ if(false){
 
 
 // 4) Set Default Account:
-// Set the default account from stored wallets
-const defWallet = configObj.defaultWallet;
-if(defWallet.address) {
-    configFile.defaultWallet = serializeBigInts(defWallet);
-} else {
-    if(allAccounts && allAccounts.length > 0) {
+if(allAccounts && allAccounts.length > 0) {
+    // Set the default account from stored wallets
+    const defWallet = configObj.defaultWallet;
+    if(defWallet.address) {
+        configFile.defaultWallet = serializeBigInts(defWallet);
+    } else {
         configFile.defaultWallet = serializeBigInts(allAccounts[0]);
     }
+} else {
+    configFile.defaultWallet = {};
 }
+
 
 // 5) Update config file
 fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));

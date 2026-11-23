@@ -182,10 +182,6 @@ async function _getAccountInfo(_index) {
         accInfo.path = allAccounts[_index].path;
         accInfo.depth = allAccounts[_index].depth;
     }
-    if(!Array.isArray(w2cObj[accInfo.address])) {
-        w2cObj[accInfo.address] = [];
-    }
-    accInfo.deployedContracts = w2cObj[accInfo.address];
 
     return accInfo;
 }

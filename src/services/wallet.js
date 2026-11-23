@@ -402,3 +402,38 @@ export function changeDefaultAccount(accPointer) {
         console.error(err);
     }
 }
+
+/**
+ * Returns the deployed contracts of specific wallet
+ * @param {Number} pointer 
+ * @returns {Array}
+ */
+export function contractOf(pointer) {
+    let walletAddr;
+    // If the pointer is wallet index
+    if(typeof pointer === 'number') {
+        // Check the index is valid
+        if(0 <= pointer && pointer <= allAccounts.length - 1) {
+            walletAddr = allAccounts[pointer].address;
+        } else {
+            throw `Wallet index is NOT valid. Valid value is integer between 0 and ${allAccounts.length - 1}`;
+        }
+        // If the pointer is wallet address
+    } else if(ethers.isAddress(pointer)) {
+        // Check the wallet address exists
+        const wallet = allAccounts.find(
+            account => account.address?.toLowerCase() === pointer.toLowerCase()
+        );
+        if (!wallet) {
+            throw `Wallet address NOT imported before!`;
+        }
+        walletAddr = wallet.address;
+    } else {
+        throw `The input is neither index nor address!`
+    }
+    // Return deployed contracts of wallet
+    if(!Array.isArray(w2cObj[walletAddr])) {
+        w2cObj[walletAddr] = [];
+    }
+    return w2cObj[walletAddr];
+}

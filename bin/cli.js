@@ -33,7 +33,8 @@ import {
     getAllAccounts,
     connectWallet,
     getWalletInfo,
-    changeDefaultAccount
+    changeDefaultAccount,
+    contractOf
     } from '../src/services/wallet.js';
 
 import { deploy, addContract, restoreContract, deleteContract } from '../src/services/addContracts.js';
@@ -97,7 +98,8 @@ r.context.connectWallet = connectWallet;
 r.context.wallets = getAccounts;
 r.context.allWallets = getAllAccounts;
 r.context.hdWallets = getHDAccounts;
-r.context.walletInfo = getWalletInfo
+r.context.walletInfo = getWalletInfo;
+r.context.depContOf = contractOf;
 
 // Add contract
 r.context.deploy = deploy;

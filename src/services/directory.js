@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 // Change the current working directory
 export function changeDir(directory) {
     if (typeof directory !== 'string' || directory.trim() === '') {
-        console.log('Usage: cd("path/to/directory")');
+        console.log('Usage: cd path/to/directory');
         return;
     }
 
@@ -23,7 +23,7 @@ export function currentDir() {
 // List entries in the current or specified directory
 export function listDir(directory = '.') {
     if (typeof directory !== 'string' || directory.trim() === '') {
-        console.log('Usage: ls() or ls("path/to/directory")');
+        console.log('Usage: ls or ls path/to/directory');
         return;
     }
 
@@ -93,7 +93,7 @@ export function pushd(directory) {
         directory !== undefined &&
         (typeof directory !== 'string' || directory.trim() === '')
     ) {
-        console.log('Usage: pushd() or pushd("path/to/directory")');
+        console.log('Usage: pushd or pushd path/to/directory');
         return;
     }
 

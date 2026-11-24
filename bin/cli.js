@@ -11,6 +11,7 @@
 import repl from 'repl';
 import util from 'util';
 import { customEval } from '../src/utils/replHelper.js';
+import { transformBareCommand } from '../src/utils/commandParser.js';
 import { 
     updateCompiler,
     currentCompiler,
@@ -58,7 +59,10 @@ import {
 export const r = repl.start({
     prompt: 'EtherShell> ',
     ignoreUndefined: true,
-    eval: customEval,
+    eval: (input, replContext, filename, callback) => {
+        const transformedInput = transformBareCommand(input, r.context);
+        customEval(transformedInput, replContext, filename, callback);
+    },
     writer: output => {
         return util.inspect(output, { colors: true, depth: null });
     }

@@ -114,39 +114,7 @@ export function addAccounts(privKeyArr) {
  * addHD('witch collapse practice feed shame open despair creek road again ice least', 5);
  */
 export function addHD(phrase, count = 10) {
-    const newFrom = allAccounts.length;
-    let newAccObj;
-    const hdNode = ethers.HDNodeWallet.fromPhrase(phrase);
-
-    const existingPhrase = allAccounts.find(wallet => wallet.phrase == phrase);
-    if(existingPhrase) {
-        throw `Error: HD wallet with this mnemonic phrase already exists at index ${existingPhrase.index}!`
-    }
-    
-    for (let i = 0; i < count; i++) {
-        const hdWallet = hdNode.derivePath(i.toString());
-        const dupHDWallet = detectDupWallet(hdWallet.privateKey);
-        if(dupHDWallet.status) {
-            throw `Error: Wallets may NOT be duplicated! You are adding wallet index ${dupHDWallet.index} again!`
-        } else {
-            newAccObj = {
-                index: allAccounts.length,
-                address: hdWallet.address,
-                phrase: hdWallet.mnemonic.phrase,
-                privateKey: hdWallet.privateKey,
-                type: 'user-imported',
-                path: hdWallet.path,
-                depth: hdWallet.depth
-            },
-            allAccounts.push(newAccObj);
-            newAccObj.index = allAccounts.length - 1;
-            hdAccounts.push(newAccObj);
-        }
-    }
-    updateWalletJSON(allAccounts);
-    setDefaultAccount(allAccounts[0]);
-    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
-    return allAccounts.slice(newFrom);
+    return _deriveHDAccounts(phrase, count, 'user-imported');
 }
 
 /**
@@ -295,31 +263,51 @@ export function deleteAccount(accPointer) {
 }
 
 /**
- * Connect to node-managed wallets (e.g., from Hardhat node)
+ * Default BIP39 mnemonic used by local development nodes
+ * (Hardhat Network, Anvil, ...). Its keys are PUBLIC: never use them on main net.
+ * @type {string}
+ */
+export const LOCAL_NODE_MNEMONIC =
+    'test test test test test test test test test test test junk';
+
+/**
+ * Connect to the wallets of a local development node (Hardhat, Anvil, ...).
+ * Nodes never expose their private keys over JSON-RPC, but their default
+ * accounts come from a well-known mnemonic, so the accounts are derived from
+ * `LOCAL_NODE_MNEMONIC`. They keep their private keys (so they can also sign
+ * offline) and are stored with the type 'node-managed'.
+ * For a node started with a custom mnemonic use `addHD(phrase)` instead.
  * @async
- * @returns {Promise<void>}
+ * @param {number} [count] - Accounts to derive. Defaults to the number of
+ * accounts the connected node reports (20 for Hardhat, 10 for Anvil), or 10.
+ * @returns {Promise<Array<Object>|undefined>} The newly added accounts
  * @example
  * await connectWallet();
+ * await connectWallet(5);
  */
-export async function connectWallet() {
+export async function connectWallet(count) {
     try {
-        const addressArr = await provider.listAccounts();
-        for (let i = 0; i < addressArr.length; i++) {
-            const accSigner = await provider.getSigner(addressArr[i].address);
-            allAccounts.push({
-                index: allAccounts.length,
-                address: addressArr[i].address,
-                type: 'node-managed', // Indicate this is managed by the node
-                signer: accSigner // Store signer reference
-            })
-            accounts.push({
-                index: allAccounts.length - 1,
-                address: addressArr[i].address,
-                type: 'node-managed', // Indicate this is managed by the node
-                signer: accSigner // Store signer reference
-            }) 
+        let nodeAddresses = [];
+        try {
+            nodeAddresses = (await provider.listAccounts()).map(acc => acc.address);
+        } catch {
+            // Node unreachable or does not expose accounts; fall back to defaults
         }
-        updateWalletJSON(allAccounts);
+
+        const newAccounts = _deriveHDAccounts(
+            LOCAL_NODE_MNEMONIC,
+            count ?? (nodeAddresses.length || 10),
+            'node-managed'
+        );
+
+        // Warn if the node does not actually hold these accounts
+        if (nodeAddresses.length && !nodeAddresses.includes(newAccounts[0].address)) {
+            console.warn(
+                'WARNING: the connected node does not manage these accounts. ' +
+                'It may have been started with a different mnemonic.'
+            );
+        }
+        return newAccounts;
     } catch(err) {
         console.error(err);
     }
@@ -436,4 +424,52 @@ export function contractOf(pointer) {
         w2cObj[walletAddr] = [];
     }
     return w2cObj[walletAddr];
+}
+
+/**
+ * Derive HD accounts from a mnemonic and store them with the given type
+ * @private
+ * @param {string} phrase - BIP39 mnemonic phrase
+ * @param {number} count - Number of accounts to derive
+ * @param {string} type - Account type, e.g. 'user-imported' or 'node-managed'
+ * @returns {Array<Object>} The newly added accounts
+ */
+function _deriveHDAccounts(phrase, count, type) {
+    const newFrom = allAccounts.length;
+    let newAccObj;
+    // Normalize the phrase (trim + collapse whitespace) and derive from the ROOT
+    // node ('m'), so account i is the standard m/44'/60'/0'/0/i used by
+    // MetaMask, Hardhat and Anvil.
+    const normalizedPhrase = phrase.trim().split(/\s+/).join(' ');
+    const hdNode = ethers.HDNodeWallet.fromPhrase(normalizedPhrase, undefined, 'm');
+
+    const existingPhrase = allAccounts.find(wallet => wallet.phrase == normalizedPhrase);
+    if(existingPhrase) {
+        throw `Error: HD wallet with this mnemonic phrase already exists at index ${existingPhrase.index}!`
+    }
+    
+    for (let i = 0; i < count; i++) {
+        const hdWallet = hdNode.derivePath(`44'/60'/0'/0/${i}`);
+        const dupHDWallet = detectDupWallet(hdWallet.privateKey);
+        if(dupHDWallet.status) {
+            throw `Error: Wallets may NOT be duplicated! You are adding wallet index ${dupHDWallet.index} again!`
+        } else {
+            newAccObj = {
+                index: allAccounts.length,
+                address: hdWallet.address,
+                phrase: hdWallet.mnemonic.phrase,
+                privateKey: hdWallet.privateKey,
+                type,
+                path: hdWallet.path,
+                depth: hdWallet.depth
+            },
+            allAccounts.push(newAccObj);
+            newAccObj.index = allAccounts.length - 1;
+            hdAccounts.push(newAccObj);
+        }
+    }
+    updateWalletJSON(allAccounts);
+    setDefaultAccount(allAccounts[0]);
+    console.info(`!WARNING!\n The generated accounts are NOT safe. Do NOT use them on main net!`);
+    return allAccounts.slice(newFrom);
 }

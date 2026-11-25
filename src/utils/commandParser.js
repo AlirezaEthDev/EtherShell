@@ -18,10 +18,9 @@ function splitArgs(input) {
     const char = input[i];
 
     if (quote) {
+      current += char; // keep the closing quote too
       if (char === quote && input[i - 1] !== '\\') {
         quote = null;
-      } else {
-        current += char;
       }
       continue;
     }
@@ -83,8 +82,11 @@ export function transformBareCommand(input, context) {
 
   if (!trimmed) return input;
 
-  // Already a JavaScript expression/call.
-  if (trimmed.includes('(') || trimmed.includes('=')) {
+  // Already a JavaScript expression/call/assignment/member access, e.g.
+  //   addHD("...")   x = 5   contract.method()
+  // Only look at what directly follows the first word, so parentheses or
+  // '=' inside a quoted argument do not disable the bare-command syntax.
+  if (/^[A-Za-z_$][\w$]*(?:\s*[(=]|[.\[]|\s*(?:\+\+|--))/.test(trimmed)) {
     return input;
   }
 

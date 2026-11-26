@@ -21,6 +21,10 @@ import {
   configFile,
   compConfig
 } from './configSync.js';
+import { getSolc, resolveVersion } from '../utils/builder.js';
+
+const save = () => fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+const shortOf = (v) => v.match(/^v(\d+\.\d+\.\d+)/)[1];
 
 /**
  * Update the Solidity compiler to a specific version
@@ -31,18 +35,45 @@ import {
  * @example
  * await updateCompiler('v0.8.20+commit.a1b79de6');
  */
-export async function updateCompiler(version){
-  try{
-    // Update global configuration
-    compConfig.currentSolcInstance = await setVersion(version, compConfig.currentSolcInstance);
+export async function updateCompiler(version) {
+  try {
+      const full = await resolveVersion(version);
+      await getSolc(full);                       // download + verify it loads
+      const c = configFile.compiler;
+      c.version = full;
+      if (!c.versions.includes(full)) c.versions.push(full);
+      save();
+      console.log(`Default compiler: ${shortOf(full)}`);
+  } catch (err) { console.error(err.message); }
+}
 
-    // Update config file
-    configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
-    fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
-
-  } catch(err) {
-    console.error(err);
+/** Add one or more compilers to the pool and download them now */
+export async function addCompiler(...versions) {
+  for (const v of versions) {
+    try {
+      const full = await resolveVersion(v);
+      await getSolc(full);
+      if (!configFile.compiler.versions.includes(full)) configFile.compiler.versions.push(full);
+      console.log(`Added solc ${shortOf(full)}`);
+    } catch (err) { console.error(err.message); }
   }
+  save();
+}
+
+export function removeCompiler(version) {
+  const s = String(version).replace(/^v/, '');
+  const c = configFile.compiler;
+  c.versions = c.versions.filter((v) => shortOf(v) !== s);
+  if (shortOf(c.version) === s) c.version = c.versions[0] ?? c.version;
+  save();
+}
+
+/** Force a version for one file; call with no version to clear it */
+export async function compOverride(file, version) {
+  const key = path.relative(process.cwd(), path.resolve(file)).split(path.sep).join('/');
+  if (!version) delete configFile.compiler.overrides[key];
+  else configFile.compiler.overrides[key] = await resolveVersion(version);
+  save();
 }
 
 /**
@@ -51,8 +82,9 @@ export async function updateCompiler(version){
  * @example
  * const version = currentCompiler(); // Returns: "0.8.20+commit.a1b79de6.Emscripten.clang"
  */
-export function currentCompiler(){
-  return compConfig.currentSolcInstance.version();
+export function currentCompiler() {
+  const c = configFile.compiler;
+  return { default: shortOf(c.version), versions: c.versions.map(shortOf), overrides: c.overrides };
 }
 
 /**
@@ -125,7 +157,7 @@ export function getCompilerOptions() {
  * compile('./contracts/MyToken.sol'); // Compile specific file
  * compile('./contracts', ['MyToken'], './output'); // Compile specific contracts to custom path
  */
-export function compile(fullPath, selectedContracts, buildPath){
+export async function compile(fullPath, selectedContracts, buildPath){
   try{
     // Set default path if buildPath is undefined
     if(!buildPath){

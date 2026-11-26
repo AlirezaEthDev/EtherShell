@@ -19,7 +19,10 @@ import {
     getCompilerOptions,
     compile,
     changeCompPath,
-    flatten
+    flatten,
+    addCompiler,
+    removeCompiler,
+    compOverride
 } from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
@@ -76,6 +79,9 @@ r.context.defaultChain = getDefault;
 // Compile commands
 r.context.compiler = currentCompiler;
 r.context.compUpdate = updateCompiler;
+r.context.compAdd = addCompiler;
+r.context.compRemove = removeCompiler;
+r.context.compOverride = compOverride;
 r.context.compInfo = getCompilerOptions;
 r.context.compOpts = compilerOptions;
 r.context.compPath = changeCompPath;

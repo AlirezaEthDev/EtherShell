@@ -1,7 +1,4 @@
-import { 
-    loadSolcVersion, 
-    extractLoadableVersion
-} from '../utils/builder.js';
+import extractLoadableVersion from '../utils/builder.js';
 import { allAccounts } from './wallet.js';
 import { serializeBigInts } from '../utils/serialize.js';
 import fs from 'fs';
@@ -36,7 +33,6 @@ export const configPath = './ethershell/config.json';
 /**
  * Global compiler configuration state
  * @type {Object}
- * @property {Object} currentSolcInstance - Current Solidity compiler instance
  * @property {boolean} optimizer - Whether gas optimizer is enabled
  * @property {number} optimizerRuns - Number of optimizer runs
  * @property {boolean} viaIR - Whether to use IR-based code generation
@@ -109,32 +105,24 @@ if(storedUrl) {
     configFile.providerEndpoint = defaultUrl;
 }
 
-// 3) Set Compiler to Memory:
-// Initialize global configuration of compiler
-// if(storedCompConfig){
-if(false){
-  configFile.compiler = storedCompConfig.compiler;
-  console.info(`Compiler is loading ...`);
-  compConfig.currentSolcInstance = await loadSolcVersion(configFile.compiler.version);
-  console.info(`Loading done!`);
-  compConfig.optimizer = configFile.compiler.optimizer;
-  compConfig.viaIR = configFile.compiler.viaIR;
-  compConfig.optimizerRuns = configFile.compiler.optimizerRuns;
-  compConfig.compilePath = configFile.compiler.compilePath;
-} else {
-  compConfig = {
-    currentSolcInstance: solc, // default local compiler
-    optimizer: false,
-    viaIR: false,
-    optimizerRuns: 200,
-    compilePath: './build'
-  }
-  configFile.compiler.version = extractLoadableVersion(compConfig.currentSolcInstance.version());
-  configFile.compiler.optimizer = compConfig.optimizer;
-  configFile.compiler.viaIR = compConfig.viaIR;
-  configFile.compiler.optimizerRuns = compConfig.optimizerRuns;
-  configFile.compiler.compilePath = compConfig.compilePath;
-}
+// 3) Compiler settings (compilers load lazily when a build needs them)
+const stored = storedCompConfig?.compiler ?? {};
+const defaultVersion = stored.version ?? extractLoadableVersion(solc.version());
+configFile.compiler = {
+  version: defaultVersion,
+  versions: stored.versions ?? [defaultVersion],
+  overrides: stored.overrides ?? {},
+  optimizer: stored.optimizer ?? false,
+  viaIR: stored.viaIR ?? false,
+  optimizerRuns: stored.optimizerRuns ?? 200,
+  compilePath: stored.compilePath ?? './build'
+};
+Object.assign(compConfig, {
+  optimizer: configFile.compiler.optimizer,
+  viaIR: configFile.compiler.viaIR,
+  optimizerRuns: configFile.compiler.optimizerRuns,
+  compilePath: configFile.compiler.compilePath
+});
 
 
 // 4) Set Default Account:

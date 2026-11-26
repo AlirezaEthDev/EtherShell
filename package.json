@@ -1,7 +1,7 @@
 {
   "name": "ethershell",
   "license": "MIT",
-  "version": "0.2.7-beta.1",
+  "version": "0.2.7-beta.2",
   "description": "Interactive JavaScript console for Ethereum smart contract management",
   "author": "Alireza Kiakojouri (alirezaethdev@gmail.com)",
   "repository": {
@@ -35,6 +35,7 @@
   ],
   "dependencies": {
     "ethers": "^6.13.0",
+    "semver": "^7.8.6",
     "solc": "^0.8.29",
     "vm": "^0.1.0"
   },

@@ -8,9 +8,10 @@
 import path from 'path';
 import { check, collectSolFiles } from '../utils/dir.js';
 import { 
-  setVersion,
   build, 
-  extractLoadableVersion 
+  getSolc,
+  resolveVersion,
+  EVM_VERSIONS 
 } from '../utils/builder.js';
 import fs from 'fs';
 import { 
@@ -21,10 +22,22 @@ import {
   configFile,
   compConfig
 } from './configSync.js';
-import { getSolc, resolveVersion } from '../utils/builder.js';
 
 const save = () => fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
 const shortOf = (v) => v.match(/^v(\d+\.\d+\.\d+)/)[1];
+
+export function setEvmVersion(name) {
+  const c = configFile.compiler;
+  if (name === undefined) return c.evmVersion ?? 'default (per compiler)';
+  if (name === 'default' || name === null) c.evmVersion = null;
+  else {
+    const canon = EVM_VERSIONS.find((v) => v.toLowerCase() === String(name).toLowerCase());
+    if (!canon) { console.error(`Unknown EVM version. Use one of: ${EVM_VERSIONS.join(', ')}`); return; }
+    c.evmVersion = canon;
+  }
+  save();
+  console.log(`evmVersion: ${c.evmVersion ?? 'default (per compiler)'}`);
+}
 
 /**
  * Update the Solidity compiler to a specific version
@@ -179,12 +192,12 @@ export async function compile(fullPath, selectedContracts, buildPath){
         throw 'There is no smart contract in the directory!';
       } else {
         for(let i = 0; i < solFiles.length; i++){
-          build(solFiles[i], selectedContracts, buildPath);
+          await build(solFiles[i], selectedContracts, buildPath);
         }
         console.log(`Contracts compiled into ${path.resolve(buildPath)}`);
       }
     } else {
-      build(fullPath, selectedContracts, buildPath);
+      await build(fullPath, selectedContracts, buildPath);
       console.log(`Contract compiled into ${path.resolve(buildPath)}`);
     }
 

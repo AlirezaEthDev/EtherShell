@@ -1,4 +1,4 @@
-import extractLoadableVersion from '../utils/builder.js';
+import { extractLoadableVersion } from '../utils/builder.js';
 import { allAccounts } from './wallet.js';
 import { serializeBigInts } from '../utils/serialize.js';
 import fs from 'fs';
@@ -112,6 +112,7 @@ configFile.compiler = {
   version: defaultVersion,
   versions: stored.versions ?? [defaultVersion],
   overrides: stored.overrides ?? {},
+  evmVersion: stored.evmVersion ?? null,   // null = compiler default
   optimizer: stored.optimizer ?? false,
   viaIR: stored.viaIR ?? false,
   optimizerRuns: stored.optimizerRuns ?? 200,

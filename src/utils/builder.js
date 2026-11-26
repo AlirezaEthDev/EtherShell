@@ -25,6 +25,24 @@ const BIN_URL = 'https://binaries.soliditylang.org/bin';
 const loaded = new Map(); // full version -> solc instance
 const LIST_FILE = () => path.resolve(compilersDir, 'list.json');
 
+export const EVM_VERSIONS = ['homestead','tangerineWhistle','spuriousDragon','byzantium',
+  'constantinople','petersburg','istanbul','berlin','london','paris','shanghai',
+  'cancun','prague','osaka','amsterdam'];
+
+// Minimum solc that accepts each name. Older names fall through as "supported".
+export const EVM_MIN_SOLC = { paris: '0.8.18', shanghai: '0.8.20', cancun: '0.8.24',
+  prague: '0.8.27', osaka: '0.8.29', amsterdam: '0.8.36' };
+
+export const supportsEvm = (short, evm) => !EVM_MIN_SOLC[evm] || semver.gte(short, EVM_MIN_SOLC[evm]);
+
+export function defaultEvm(short) {
+  return semver.gte(short, '0.8.31') ? 'osaka'
+       : semver.gte(short, '0.8.30') ? 'prague'
+       : semver.gte(short, '0.8.25') ? 'cancun'
+       : semver.gte(short, '0.8.20') ? 'shanghai'
+       : semver.gte(short, '0.8.18') ? 'paris' : 'london';
+}
+
 function compilerFile(version) {
   // version like "v0.8.29+commit.ab55807c"
   return path.resolve(compilersDir, `soljson-${version}.cjs`);
@@ -104,24 +122,31 @@ function pragmaRanges(sources) {
 
 async function selectCompiler(fullPath, sources) {
   const opts = getCompilerOptions();
+  const evm = opts.evmVersion;
   const rel = path.relative(process.cwd(), path.resolve(fullPath)).split(path.sep).join('/');
 
-  if (opts.overrides?.[rel]) return getSolc(opts.overrides[rel]);
+  if (opts.overrides?.[rel]) {
+    const full = await resolveVersion(opts.overrides[rel]);
+    const short = full.match(/^v(\d+\.\d+\.\d+)/)[1];
+    if (evm && !supportsEvm(short, evm))
+      throw new Error(`${rel}: override solc ${short} cannot target evmVersion "${evm}" (needs >= ${EVM_MIN_SOLC[evm]})`);
+    return { solc: await getSolc(full), short, rel };
+  }
 
   const pool = [...new Set([opts.version, ...(opts.versions ?? [])])];
   const candidates = pool.map((full) => ({ full, short: full.match(/^v(\d+\.\d+\.\d+)/)[1] }));
   const ranges = pragmaRanges(sources);
-  const ok = candidates.filter((c) => ranges.every((r) => semver.satisfies(c.short, r)));
+  const byPragma = candidates.filter((c) => ranges.every((r) => semver.satisfies(c.short, r)));
+  const ok = evm ? byPragma.filter((c) => supportsEvm(c.short, evm)) : byPragma;
 
   if (!ok.length) {
-    throw new Error(
-      `No configured compiler satisfies ${rel} (pragmas: ${ranges.join(' | ')}). ` +
-      `Configured: ${candidates.map((c) => c.short).join(', ')}. Add one with: compAdd <version>`
-    );
+    const why = byPragma.length
+      ? `${byPragma.map((c) => c.short).join(', ')} match the pragma but cannot target evmVersion "${evm}" (needs solc >= ${EVM_MIN_SOLC[evm]}).`
+      : `No configured compiler satisfies the pragmas (${ranges.join(' | ')}).`;
+    throw new Error(`${rel}: ${why} Configured: ${candidates.map((c) => c.short).join(', ')}. Add one with: compAdd <version>`);
   }
   const chosen = ok.find((c) => c.full === opts.version) ?? ok.sort((a, b) => semver.rcompare(a.short, b.short))[0];
-  console.log(`${rel}: solc ${chosen.short}`);
-  return getSolc(chosen.full);
+  return { solc: await getSolc(chosen.full), short: chosen.short, rel };
 }
 
 /**
@@ -139,7 +164,7 @@ async function selectCompiler(fullPath, sources) {
  * @example
  * build('./contracts/MyToken.sol', ['MyToken'], './build');
  */
-export async function build(fullPath, selectedContracts, buildPath, solcInstance = solc) {
+export async function build(fullPath, selectedContracts, buildPath) {
   if (!selectedContracts) {
     selectedContracts = [];
   }
@@ -153,7 +178,7 @@ export async function build(fullPath, selectedContracts, buildPath, solcInstance
 
   // Build full standard JSON input, including all imports
   const sources = collectSourcesForStandardJson(fullPath, filename);
-  const solcInstance = await selectCompiler(fullPath, sources);
+  const { solc: solcInstance, short, rel } = await selectCompiler(fullPath, sources);
 
   const input = {
     language: 'Solidity',
@@ -168,13 +193,15 @@ export async function build(fullPath, selectedContracts, buildPath, solcInstance
   };
 
   // Apply global compiler configuration
+  if (compilerConfig.evmVersion) {
+    input.settings.evmVersion = compilerConfig.evmVersion;
+  } 
   if (compilerConfig.optimizer) {
     input.settings.optimizer = {
       enabled: true,
       runs: compilerConfig.optimizerRuns,
     };
   }
-
   if (compilerConfig.viaIR) {
     input.settings.viaIR = true;
   }

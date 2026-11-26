@@ -22,7 +22,8 @@ import {
     flatten,
     addCompiler,
     removeCompiler,
-    compOverride
+    compOverride,
+    setEvmVersion
 } from '../src/services/build.js';
 import { set, get, getDefault } from '../src/services/network.js';
 import { deleteDirectory } from '../src/services/files.js';
@@ -83,6 +84,7 @@ r.context.compAdd = addCompiler;
 r.context.compRemove = removeCompiler;
 r.context.compOverride = compOverride;
 r.context.compInfo = getCompilerOptions;
+r.context.compEvm = setEvmVersion;
 r.context.compOpts = compilerOptions;
 r.context.compPath = changeCompPath;
 r.context.build = compile;
